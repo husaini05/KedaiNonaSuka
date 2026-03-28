@@ -1,6 +1,7 @@
 import asyncio
 from playwright import async_api
 from playwright.async_api import expect
+from _base_url import bind_base_url
 
 async def run_test():
     pw = None
@@ -27,7 +28,7 @@ async def run_test():
         context.set_default_timeout(5000)
 
         # Open a new page in the browser context
-        page = await context.new_page()
+        page = bind_base_url(await context.new_page())
 
         # Interact with the page elements to simulate user flow
         # -> Navigate to http://localhost:3001/auth
@@ -141,7 +142,7 @@ async def run_test():
         
         # --> Assertions to verify final state
         frame = context.pages[-1]
-        await expect(frame.locator("xpath=//input[contains(@placeholder,'Toko') or contains(@aria-label,'Toko') or contains(@name,'store') or contains(@name,'nama')]")).not.to_have_value("Unsaved Store Name TC007", timeout=3000)
+        await expect(frame.locator("xpath=//input[contains(@placeholder,'Toko') or contains(@aria-label,'Toko') or contains(@name,'store') or contains(@name,'nama')]")).not_to_have_value("Unsaved Store Name TC007", timeout=3000)
         await asyncio.sleep(5)
 
     finally:
