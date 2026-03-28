@@ -18,6 +18,7 @@ function resolveAuthBaseUrl() {
     process.env.VERCEL_URL;
 
   if (vercelHost) {
+    // Vercel exposes hostnames without a protocol.
     return `https://${vercelHost}`;
   }
 
