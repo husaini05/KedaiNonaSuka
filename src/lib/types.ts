@@ -59,9 +59,12 @@ export interface Expense {
 
 export interface Settings {
   storeName: string;
+  storeTagline: string;
+  storeAddress: string;
   ownerName: string;
   ownerWhatsapp: string;
   city: string;
+  businessNotes: string;
   stockAlertThreshold: number;
   enabledPayments: PaymentMethod[];
 }

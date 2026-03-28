@@ -13,6 +13,7 @@ import { auth } from "@/lib/auth";
 import { AppState, DebtDraft, PaymentMethod, ProductDraft, Settings, Transaction } from "@/lib/types";
 
 let initializationPromise: Promise<void> | null = null;
+const supportedPaymentMethods: PaymentMethod[] = ["Tunai", "QRIS", "Transfer"];
 
 type SessionHint = {
   user?: {
@@ -43,9 +44,12 @@ async function ensureTables() {
     CREATE TABLE IF NOT EXISTS store_profiles (
       user_id text PRIMARY KEY,
       store_name text NOT NULL,
+      store_tagline text NOT NULL,
+      store_address text NOT NULL,
       owner_name text NOT NULL,
       owner_whatsapp text NOT NULL,
       city text NOT NULL,
+      business_notes text NOT NULL,
       stock_alert_threshold integer NOT NULL,
       enabled_payments jsonb NOT NULL,
       created_at timestamptz NOT NULL,
@@ -104,6 +108,15 @@ async function ensureTables() {
       created_at timestamptz NOT NULL,
       category text NOT NULL
     );
+
+    ALTER TABLE store_profiles
+      ADD COLUMN IF NOT EXISTS store_tagline text NOT NULL DEFAULT '';
+
+    ALTER TABLE store_profiles
+      ADD COLUMN IF NOT EXISTS store_address text NOT NULL DEFAULT '';
+
+    ALTER TABLE store_profiles
+      ADD COLUMN IF NOT EXISTS business_notes text NOT NULL DEFAULT '';
   `);
 }
 
@@ -122,9 +135,12 @@ async function ensureWorkspace(userId: string, session?: SessionHint) {
   await db.insert(storeProfiles).values({
     userId,
     storeName: session?.user?.name ? `Warung ${session.user.name}` : "Warung Baru",
+    storeTagline: "Warung harian untuk warga sekitar",
+    storeAddress: "Alamat belum diisi",
     ownerName: session?.user?.name ?? "Pemilik Warung",
     ownerWhatsapp: "-",
     city: "Indonesia",
+    businessNotes: "",
     stockAlertThreshold: 8,
     enabledPayments: ["Tunai", "QRIS", "Transfer"],
     createdAt: timestamp,
@@ -158,11 +174,36 @@ export async function getRequestUser() {
 function mapSettings(profile: typeof storeProfiles.$inferSelect): Settings {
   return {
     storeName: profile.storeName,
+    storeTagline: profile.storeTagline,
+    storeAddress: profile.storeAddress,
     ownerName: profile.ownerName,
     ownerWhatsapp: profile.ownerWhatsapp,
     city: profile.city,
+    businessNotes: profile.businessNotes,
     stockAlertThreshold: profile.stockAlertThreshold,
     enabledPayments: profile.enabledPayments,
+  };
+}
+
+function normalizeSettings(settings: Settings): Settings {
+  const enabledPayments = Array.from(
+    new Set(
+      settings.enabledPayments.filter((method): method is PaymentMethod =>
+        supportedPaymentMethods.includes(method)
+      )
+    )
+  );
+
+  return {
+    storeName: settings.storeName.trim(),
+    storeTagline: settings.storeTagline.trim(),
+    storeAddress: settings.storeAddress.trim(),
+    ownerName: settings.ownerName.trim(),
+    ownerWhatsapp: settings.ownerWhatsapp.trim(),
+    city: settings.city.trim(),
+    businessNotes: settings.businessNotes.trim(),
+    stockAlertThreshold: Math.max(1, Math.round(settings.stockAlertThreshold || 0)),
+    enabledPayments,
   };
 }
 
@@ -523,15 +564,33 @@ export async function remindDebt(userId: string, debtId: string) {
 }
 
 export async function updateStoreSettings(userId: string, settings: Settings) {
+  const nextSettings = normalizeSettings(settings);
+
+  if (
+    nextSettings.storeName.length === 0 ||
+    nextSettings.storeAddress.length === 0 ||
+    nextSettings.ownerName.length === 0 ||
+    nextSettings.ownerWhatsapp.length < 10 ||
+    nextSettings.city.length === 0 ||
+    nextSettings.enabledPayments.length === 0
+  ) {
+    throw new Error(
+      "Lengkapi nama warung, alamat, pemilik, WhatsApp, kota, dan pilih minimal satu metode bayar."
+    );
+  }
+
   const [updated] = await db
     .update(storeProfiles)
     .set({
-      storeName: settings.storeName,
-      ownerName: settings.ownerName,
-      ownerWhatsapp: settings.ownerWhatsapp,
-      city: settings.city,
-      stockAlertThreshold: settings.stockAlertThreshold,
-      enabledPayments: settings.enabledPayments,
+      storeName: nextSettings.storeName,
+      storeTagline: nextSettings.storeTagline,
+      storeAddress: nextSettings.storeAddress,
+      ownerName: nextSettings.ownerName,
+      ownerWhatsapp: nextSettings.ownerWhatsapp,
+      city: nextSettings.city,
+      businessNotes: nextSettings.businessNotes,
+      stockAlertThreshold: nextSettings.stockAlertThreshold,
+      enabledPayments: nextSettings.enabledPayments,
       updatedAt: nowIso(),
     })
     .where(eq(storeProfiles.userId, userId))
