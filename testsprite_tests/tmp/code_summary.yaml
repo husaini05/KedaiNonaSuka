@@ -1,0 +1,212 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js 16 App Router
+  - React 19
+  - Tailwind CSS 4
+  - shadcn/ui
+  - Better Auth
+  - Drizzle ORM
+  - PostgreSQL
+routes:
+  - path: /
+    file: src/app/page.tsx
+    auth_required: false
+    description: Entry route that redirects authenticated users to /dashboard and other users to /auth.
+  - path: /auth
+    file: src/app/auth/page.tsx
+    auth_required: false
+    description: Authentication page for sign in and sign up.
+  - path: /dashboard
+    file: src/app/(dashboard)/dashboard/page.tsx
+    auth_required: true
+    description: Operational overview with sales, transactions, low stock, and recent debts.
+  - path: /kasir
+    file: src/app/(dashboard)/kasir/page.tsx
+    auth_required: true
+    description: POS screen for searching products, managing cart, and completing checkout.
+  - path: /inventaris
+    file: src/app/(dashboard)/inventaris/page.tsx
+    auth_required: true
+    description: Inventory management page for adding, editing, and restocking products.
+  - path: /buku-hutang
+    file: src/app/(dashboard)/buku-hutang/page.tsx
+    auth_required: true
+    description: Debt ledger for recording customer debts, reminders, and repayment.
+  - path: /laporan
+    file: src/app/(dashboard)/laporan/page.tsx
+    auth_required: true
+    description: Reporting page with daily, weekly, and monthly summaries plus printable-style preview.
+  - path: /pengaturan
+    file: src/app/(dashboard)/pengaturan/page.tsx
+    auth_required: true
+    description: Store profile, payment method, stock alert, and workspace reset settings.
+features:
+  - name: Account Authentication
+    description: Users can create an account, sign in with email and password, restore session state, and sign out.
+    files:
+      - src/app/auth/page.tsx
+      - src/components/auth/auth-screen.tsx
+      - src/components/auth/account-panel.tsx
+      - src/lib/auth-client.ts
+      - src/app/api/auth/[...all]/route.ts
+    entry_route: /auth
+    user_interactions:
+      - Toggle between Masuk and Daftar modes.
+      - Fill email and password to sign in.
+      - Fill owner name, email, and password to create a new account.
+      - Submit the auth form and wait for redirect to /dashboard.
+      - Click Keluar from the account panel to sign out.
+    api_calls:
+      - method: GET
+        endpoint: /api/auth/get-session
+      - method: POST
+        endpoint: /api/auth/sign-in/email
+      - method: POST
+        endpoint: /api/auth/sign-up/email
+      - method: POST
+        endpoint: /api/auth/sign-out
+    auth_required: false
+  - name: Dashboard Overview
+    description: Authenticated users can review key store metrics, recent transactions, low stock warnings, and recent debts.
+    files:
+      - src/app/(dashboard)/dashboard/page.tsx
+      - src/components/warung/dashboard-view.tsx
+      - src/components/providers/app-state-provider.tsx
+      - src/app/api/bootstrap/route.ts
+    entry_route: /dashboard
+    user_interactions:
+      - Open the dashboard after login.
+      - Review omzet, transaction count, low stock, and active debt summary cards.
+      - Inspect latest transaction details and recent debt entries.
+      - Navigate to other dashboard pages using the sidebar or mobile sheet menu.
+    api_calls:
+      - method: GET
+        endpoint: /api/bootstrap
+    auth_required: true
+  - name: POS Checkout
+    description: Cashier flow for filtering products, building a cart, selecting payment method, and storing a completed transaction.
+    files:
+      - src/app/(dashboard)/kasir/page.tsx
+      - src/components/warung/kasir-view.tsx
+      - src/components/providers/app-state-provider.tsx
+      - src/app/api/transactions/route.ts
+      - src/app/api/bootstrap/route.ts
+    entry_route: /kasir
+    user_interactions:
+      - Search products by keyword.
+      - Filter products by category chips.
+      - Tap one or more products to add them to the cart.
+      - Increase, decrease, or remove cart line quantities.
+      - Switch between Tunai, QRIS, and Transfer payment methods.
+      - Click Selesaikan transaksi to complete checkout.
+    api_calls:
+      - method: GET
+        endpoint: /api/bootstrap
+      - method: POST
+        endpoint: /api/transactions
+    auth_required: true
+  - name: Inventory Management
+    description: Users can search inventory, create new products, edit existing products, and restock low inventory items.
+    files:
+      - src/app/(dashboard)/inventaris/page.tsx
+      - src/components/warung/inventaris-view.tsx
+      - src/components/providers/app-state-provider.tsx
+      - src/app/api/products/route.ts
+      - src/app/api/products/[id]/route.ts
+      - src/app/api/products/[id]/restock/route.ts
+      - src/app/api/bootstrap/route.ts
+    entry_route: /inventaris
+    user_interactions:
+      - Search products by name, category, or notes.
+      - Open Tambah barang and fill in product fields.
+      - Save a new product and confirm it appears in the table.
+      - Open edit action for an existing product and update its fields.
+      - Open restock action for an existing product and submit a stock increase.
+    api_calls:
+      - method: GET
+        endpoint: /api/bootstrap
+      - method: POST
+        endpoint: /api/products
+      - method: PATCH
+        endpoint: /api/products/:id
+      - method: POST
+        endpoint: /api/products/:id/restock
+    auth_required: true
+  - name: Customer Debt Ledger
+    description: Users can record customer debts, filter debt records, send reminder actions, and mark debts as paid.
+    files:
+      - src/app/(dashboard)/buku-hutang/page.tsx
+      - src/components/warung/buku-hutang-view.tsx
+      - src/components/providers/app-state-provider.tsx
+      - src/app/api/debts/route.ts
+      - src/app/api/debts/[id]/route.ts
+      - src/app/api/debts/[id]/remind/route.ts
+      - src/app/api/bootstrap/route.ts
+    entry_route: /buku-hutang
+    user_interactions:
+      - Search debts by borrower name or WhatsApp number.
+      - Filter debt cards by Semua, Belum lunas, and Lunas.
+      - Open Tambah kasbon and submit borrower, WhatsApp, amount, and due date.
+      - Click Kirim pengingat for an unpaid debt.
+      - Click the paid action to mark a debt as settled.
+    api_calls:
+      - method: GET
+        endpoint: /api/bootstrap
+      - method: POST
+        endpoint: /api/debts
+      - method: PATCH
+        endpoint: /api/debts/:id
+      - method: POST
+        endpoint: /api/debts/:id/remind
+    auth_required: true
+  - name: Reporting Dashboard
+    description: Users can inspect computed sales summaries across time ranges and review the printable report layout.
+    files:
+      - src/app/(dashboard)/laporan/page.tsx
+      - src/components/warung/laporan-view.tsx
+      - src/components/providers/app-state-provider.tsx
+      - src/lib/reporting.ts
+      - src/app/api/bootstrap/route.ts
+    entry_route: /laporan
+    user_interactions:
+      - Switch between Harian, Mingguan, and Bulanan tabs.
+      - Review omzet, gross profit, expense, and net profit cards.
+      - Inspect the trend chart and top moving products.
+      - Click Preview print and Cetak PDF actions to trigger placeholder feedback.
+    api_calls:
+      - method: GET
+        endpoint: /api/bootstrap
+    auth_required: true
+  - name: Store Settings And Workspace Reset
+    description: Users can update store identity, owner information, stock alert threshold, enabled payment methods, and reset the workspace.
+    files:
+      - src/app/(dashboard)/pengaturan/page.tsx
+      - src/components/warung/pengaturan-view.tsx
+      - src/components/providers/app-state-provider.tsx
+      - src/app/api/settings/route.ts
+      - src/app/api/bootstrap/reset/route.ts
+      - src/app/api/bootstrap/route.ts
+    entry_route: /pengaturan
+    user_interactions:
+      - Edit store name, tagline, city, address, owner details, and business notes.
+      - Change the stock alert threshold.
+      - Toggle enabled payment methods.
+      - Save the profile changes.
+      - Click the workspace reset action to restore initial data.
+    api_calls:
+      - method: GET
+        endpoint: /api/bootstrap
+      - method: PUT
+        endpoint: /api/settings
+      - method: POST
+        endpoint: /api/bootstrap/reset
+    auth_required: true
+known_limitations:
+  - issue: Report print and PDF export actions are placeholders that only show toast feedback.
+    location: src/components/warung/laporan-view.tsx
+    impact: Users cannot generate or download a real printable report document yet.
+  - issue: There is no dedicated UI to create or edit expense records even though expense totals appear in reports.
+    location: src/components/warung/laporan-view.tsx
+    impact: Expense-based report metrics depend on backend-seeded data and cannot be maintained from the app UI.
