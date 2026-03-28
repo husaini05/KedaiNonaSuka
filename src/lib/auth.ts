@@ -1,10 +1,12 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
+
 const globalForAuth = globalThis as typeof globalThis & {
   __warungosAuthPool?: Pool;
 };
 
+//Yo
 function resolveAuthBaseUrl() {
   if (process.env.BETTER_AUTH_URL) {
     return process.env.BETTER_AUTH_URL;
