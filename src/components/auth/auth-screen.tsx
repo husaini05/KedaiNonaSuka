@@ -129,13 +129,14 @@ export function AuthScreen() {
             ) : null}
 
             {mode === "signin" ? (
-              <form action="/api/session/sign-in" method="post" className="space-y-4">
-                <input type="hidden" name="callbackURL" value="/dashboard" />
+              <>
+              <div className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
                     name="email"
+                    form="signin-form"
                     type="email"
                     value={signInForm.email}
                     onChange={(event) =>
@@ -152,6 +153,7 @@ export function AuthScreen() {
                   <Input
                     id="signin-password"
                     name="password"
+                    form="signin-form"
                     type="password"
                     value={signInForm.password}
                     onChange={(event) =>
@@ -165,20 +167,26 @@ export function AuthScreen() {
                 </div>
                 <Button
                   type="submit"
+                  form="signin-form"
                   size="lg"
                   className="h-12 w-full rounded-2xl"
                 >
                   Masuk ke dashboard
                 </Button>
-              </form>
-            ) : (
-              <form action="/api/session/sign-up" method="post" className="space-y-4">
+              </div>
+              <form id="signin-form" action="/api/session/sign-in" method="post">
                 <input type="hidden" name="callbackURL" value="/dashboard" />
+              </form>
+              </>
+            ) : (
+              <>
+              <div className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="signup-name">Nama pemilik</Label>
                   <Input
                     id="signup-name"
                     name="name"
+                    form="signup-form"
                     value={signUpForm.name}
                     onChange={(event) =>
                       setSignUpForm((current) => ({ ...current, name: event.target.value }))
@@ -194,6 +202,7 @@ export function AuthScreen() {
                   <Input
                     id="signup-email"
                     name="email"
+                    form="signup-form"
                     type="email"
                     value={signUpForm.email}
                     onChange={(event) =>
@@ -210,6 +219,7 @@ export function AuthScreen() {
                   <Input
                     id="signup-password"
                     name="password"
+                    form="signup-form"
                     type="password"
                     value={signUpForm.password}
                     onChange={(event) =>
@@ -224,12 +234,17 @@ export function AuthScreen() {
                 </div>
                 <Button
                   type="submit"
+                  form="signup-form"
                   size="lg"
                   className="h-12 w-full rounded-2xl"
                 >
                   Buat akun baru
                 </Button>
+              </div>
+              <form id="signup-form" action="/api/session/sign-up" method="post">
+                <input type="hidden" name="callbackURL" value="/dashboard" />
               </form>
+              </>
             )}
           </CardContent>
         </Card>
