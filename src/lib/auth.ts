@@ -5,6 +5,23 @@ const globalForAuth = globalThis as typeof globalThis & {
   __warungosAuthPool?: Pool;
 };
 
+function resolveAuthBaseUrl() {
+  if (process.env.BETTER_AUTH_URL) {
+    return process.env.BETTER_AUTH_URL;
+  }
+
+  const vercelHost =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+    process.env.VERCEL_BRANCH_URL ??
+    process.env.VERCEL_URL;
+
+  if (vercelHost) {
+    return `https://${vercelHost}`;
+  }
+
+  return "http://localhost:3000";
+}
+
 function getAuthPool() {
   if (!globalForAuth.__warungosAuthPool) {
     globalForAuth.__warungosAuthPool = new Pool({
@@ -22,7 +39,7 @@ export const auth = betterAuth({
   secret:
     process.env.BETTER_AUTH_SECRET ??
     "warungos-dev-secret-please-change-this-in-production",
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  baseURL: resolveAuthBaseUrl(),
   emailAndPassword: {
     enabled: true,
   },
