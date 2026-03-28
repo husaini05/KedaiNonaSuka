@@ -1,0 +1,285 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { KeyRound, ShieldCheck, Store } from "lucide-react";
+import { toast } from "sonner";
+import { signIn, signUp, useSession } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+type AuthMode = "signin" | "signup";
+
+export function AuthScreen() {
+  const router = useRouter();
+  const { data: session, isPending: isSessionPending } = useSession();
+  const [mode, setMode] = useState<AuthMode>("signin");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signInForm, setSignInForm] = useState({
+    email: "",
+    password: "",
+  });
+  const [signUpForm, setSignUpForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  useEffect(() => {
+    if (!isSessionPending && session) {
+      router.replace("/dashboard");
+    }
+  }, [isSessionPending, router, session]);
+
+  async function handleSignIn() {
+    if (!signInForm.email || !signInForm.password) {
+      toast.error("Isi email dan kata sandi dulu.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await signIn.email(
+        {
+          email: signInForm.email,
+          password: signInForm.password,
+          callbackURL: "/dashboard",
+        },
+        {
+          onError: (context) => {
+            throw new Error(context.error.message);
+          },
+        }
+      );
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+
+      toast.success("Berhasil masuk ke Warung OS.");
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal masuk.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleSignUp() {
+    if (!signUpForm.name || !signUpForm.email || signUpForm.password.length < 8) {
+      toast.error("Lengkapi nama, email, dan password minimal 8 karakter.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await signUp.email(
+        {
+          name: signUpForm.name,
+          email: signUpForm.email,
+          password: signUpForm.password,
+          callbackURL: "/dashboard",
+        },
+        {
+          onError: (context) => {
+            throw new Error(context.error.message);
+          },
+        }
+      );
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+
+      toast.success("Akun berhasil dibuat.");
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal membuat akun.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background px-4 py-6 lg:px-6">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-[1440px] gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <Card className="relative overflow-hidden border-white/60 bg-[linear-gradient(145deg,rgba(58,34,24,0.98),rgba(103,59,34,0.96))] text-white shadow-[0_32px_90px_-50px_rgba(56,31,19,0.88)]">
+          <CardContent className="flex h-full flex-col justify-between gap-10 p-8 lg:p-10">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-white/12">
+                  <Store className="size-5" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.22em] text-white/70">Warung OS</p>
+                  <p className="mt-1 text-sm text-white/80">Masuk untuk sinkronisasi warung kamu</p>
+                </div>
+              </div>
+
+              <h1 className="mt-8 max-w-xl font-heading text-4xl font-semibold tracking-tight lg:text-5xl">
+                Pembukuan, kasir, stok, dan kasbon dalam satu aplikasi warung.
+              </h1>
+              <p className="mt-5 max-w-xl text-base leading-7 text-white/72">
+                Better Auth sekarang terhubung ke frontend, jadi akun yang kamu buat akan langsung
+                membawa workspace warung sendiri di backend.
+              </p>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="rounded-[24px] border border-white/10 bg-white/6 p-5">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="size-5 text-[#ffbd7b]" />
+                  <p className="font-medium">Session aman dan konsisten</p>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/72">
+                  Login dan logout sekarang langsung memakai Better Auth client dan route auth di backend.
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-white/6 p-5">
+                <div className="flex items-center gap-3">
+                  <KeyRound className="size-5 text-[#ffbd7b]" />
+                  <p className="font-medium">Data langsung tersambung ke API</p>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/72">
+                  Setelah login, bootstrap state frontend otomatis memuat workspace user dari API yang sama.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-heading text-3xl">Akses akun</CardTitle>
+            <CardDescription>
+              Masuk untuk membuka workspace warung sendiri, atau buat akun baru untuk mulai mencatat transaksi.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="inline-flex rounded-full bg-muted p-1">
+              <button
+                type="button"
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  mode === "signin"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setMode("signin")}
+              >
+                Masuk
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  mode === "signup"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setMode("signup")}
+              >
+                Daftar
+              </button>
+            </div>
+
+            {mode === "signin" ? (
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={signInForm.email}
+                    onChange={(event) =>
+                      setSignInForm((current) => ({ ...current, email: event.target.value }))
+                    }
+                    className="h-12 rounded-2xl bg-white/80"
+                    placeholder="warung@email.com"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="signin-password">Kata sandi</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    value={signInForm.password}
+                    onChange={(event) =>
+                      setSignInForm((current) => ({ ...current, password: event.target.value }))
+                    }
+                    className="h-12 rounded-2xl bg-white/80"
+                    placeholder="Minimal 8 karakter"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="lg"
+                  className="h-12 w-full rounded-2xl"
+                  onClick={() => void handleSignIn()}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Memproses..." : "Masuk ke dashboard"}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="signup-name">Nama pemilik</Label>
+                  <Input
+                    id="signup-name"
+                    value={signUpForm.name}
+                    onChange={(event) =>
+                      setSignUpForm((current) => ({ ...current, name: event.target.value }))
+                    }
+                    className="h-12 rounded-2xl bg-white/80"
+                    placeholder="Ibu Sari"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={signUpForm.email}
+                    onChange={(event) =>
+                      setSignUpForm((current) => ({ ...current, email: event.target.value }))
+                    }
+                    className="h-12 rounded-2xl bg-white/80"
+                    placeholder="warung@email.com"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="signup-password">Kata sandi</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    value={signUpForm.password}
+                    onChange={(event) =>
+                      setSignUpForm((current) => ({ ...current, password: event.target.value }))
+                    }
+                    className="h-12 rounded-2xl bg-white/80"
+                    placeholder="Minimal 8 karakter"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="lg"
+                  className="h-12 w-full rounded-2xl"
+                  onClick={() => void handleSignUp()}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Memproses..." : "Buat akun baru"}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

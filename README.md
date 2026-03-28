@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Warung OS
 
-## Getting Started
+App Warung OS dibangun dengan Next.js App Router, Tailwind CSS, shadcn/ui, route handlers, Drizzle ORM, dan Better Auth.
 
-First, run the development server:
+## Fitur
+
+- Kasir visual tablet-first dengan cart interaktif dan checkout mock
+- Inventaris barang jadi dengan tambah, edit, dan restok produk
+- Buku hutang pelanggan dengan pengingat WhatsApp dummy
+- Laporan harian, mingguan, dan bulanan dengan preview PDF placeholder
+- Pengaturan warung, notifikasi stok menipis, dan metode pembayaran
+
+## Jalankan lokal
 
 ```bash
+npm install
+cp .env.example .env
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App akan terbuka di [http://localhost:3000](http://localhost:3000) dan langsung diarahkan ke halaman `Kasir`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Backend memakai Next.js API route handlers di `src/app/api`
+- ORM memakai Drizzle dengan schema di `src/db/schema.ts`
+- Auth memakai Better Auth dengan route handler di `src/app/api/auth/[...all]/route.ts`
+- `.env.example` sudah disiapkan untuk Postgres Docker lokal di port `5439`
+- Untuk menyalakan Postgres Docker lokal:
 
-## Learn More
+```bash
+docker run -d --name warungos-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=warungos \
+  -p 5439:5432 \
+  postgres:16-alpine
+```
 
-To learn more about Next.js, take a look at the following resources:
+- Untuk menyiapkan schema aplikasi dan auth:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:generate
+npm run db:migrate
+npm run auth:migrate
+npm run db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Untuk membuka Drizzle Studio:
 
-## Deploy on Vercel
+```bash
+npm run db:studio
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Verifikasi
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm run build
+```
