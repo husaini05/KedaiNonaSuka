@@ -44,18 +44,30 @@ async function main() {
   await db.delete(expenses).where(eq(expenses.userId, SEED_USER_ID));
   await db.delete(products).where(eq(products.userId, SEED_USER_ID));
 
+  const profileValues = {
+    storeName: seedState.settings.storeName,
+    storeTagline: seedState.settings.storeTagline,
+    storeAddress: seedState.settings.storeAddress,
+    ownerName: seedState.settings.ownerName,
+    ownerWhatsapp: seedState.settings.ownerWhatsapp,
+    city: seedState.settings.city,
+    businessNotes: seedState.settings.businessNotes,
+    stockAlertThreshold: seedState.settings.stockAlertThreshold,
+    enabledPayments: seedState.settings.enabledPayments,
+    updatedAt: timestamp,
+  };
+
   if (!existingProfile) {
     await db.insert(storeProfiles).values({
       userId: SEED_USER_ID,
-      storeName: seedState.settings.storeName,
-      ownerName: seedState.settings.ownerName,
-      ownerWhatsapp: seedState.settings.ownerWhatsapp,
-      city: seedState.settings.city,
-      stockAlertThreshold: seedState.settings.stockAlertThreshold,
-      enabledPayments: seedState.settings.enabledPayments,
+      ...profileValues,
       createdAt: timestamp,
-      updatedAt: timestamp,
     });
+  } else {
+    await db
+      .update(storeProfiles)
+      .set(profileValues)
+      .where(eq(storeProfiles.userId, SEED_USER_ID));
   }
 
   const productIdMap = new Map(

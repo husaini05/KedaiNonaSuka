@@ -9,9 +9,12 @@ export const emptyAppState: AppState = {
   paymentMethod: "Tunai",
   settings: {
     storeName: "",
+    storeTagline: "",
+    storeAddress: "",
     ownerName: "",
     ownerWhatsapp: "",
     city: "",
+    businessNotes: "",
     stockAlertThreshold: 5,
     enabledPayments: ["Tunai", "QRIS", "Transfer"],
   },

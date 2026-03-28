@@ -234,9 +234,12 @@ const expenses: Expense[] = [
 
 const settings: Settings = {
   storeName: "Warung Berkah Ibu Sari",
+  storeTagline: "Sembako, kopi, dan jajanan tetangga",
+  storeAddress: "Jl. H. Nawi No. 18, RT 03/RW 04, Gandaria Selatan",
   ownerName: "Ibu Sari",
   ownerWhatsapp: "081277788899",
   city: "Jakarta Selatan",
+  businessNotes: "Buka setiap hari, fokus ke produk cepat habis dan pelanggan sekitar rumah.",
   stockAlertThreshold: 8,
   enabledPayments: ["Tunai", "QRIS", "Transfer"],
 };

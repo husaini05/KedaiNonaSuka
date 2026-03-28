@@ -178,7 +178,12 @@ export function LaporanView() {
                 <div>
                   <p className="text-sm uppercase tracking-[0.22em] text-primary">Warung OS report</p>
                   <h3 className="mt-2 font-heading text-3xl font-semibold">{settings.storeName}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{settings.city}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {[settings.storeTagline, settings.city].filter(Boolean).join(" • ")}
+                  </p>
+                  <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                    {settings.storeAddress}
+                  </p>
                 </div>
                 <div className="rounded-[22px] bg-foreground px-4 py-3 text-right text-background">
                   <p className="text-xs uppercase tracking-[0.18em] text-background/70">{rangeLabel}</p>

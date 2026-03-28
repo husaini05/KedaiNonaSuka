@@ -4,9 +4,12 @@ import { PaymentMethod } from "@/lib/types";
 export const storeProfiles = pgTable("store_profiles", {
   userId: text("user_id").primaryKey(),
   storeName: text("store_name").notNull(),
+  storeTagline: text("store_tagline").notNull(),
+  storeAddress: text("store_address").notNull(),
   ownerName: text("owner_name").notNull(),
   ownerWhatsapp: text("owner_whatsapp").notNull(),
   city: text("city").notNull(),
+  businessNotes: text("business_notes").notNull(),
   stockAlertThreshold: integer("stock_alert_threshold").notNull(),
   enabledPayments: jsonb("enabled_payments").$type<PaymentMethod[]>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
