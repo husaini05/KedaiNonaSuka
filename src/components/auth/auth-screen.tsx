@@ -1,10 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { KeyRound, ShieldCheck, Store } from "lucide-react";
-import { toast } from "sonner";
-import { signIn, signUp, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,9 +14,11 @@ type AuthMode = "signin" | "signup";
 
 export function AuthScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending: isSessionPending } = useSession();
-  const [mode, setMode] = useState<AuthMode>("signin");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
+  const authError = searchParams.get("error");
+  const [mode, setMode] = useState<AuthMode>(queryMode);
   const [signInForm, setSignInForm] = useState({
     email: "",
     password: "",
@@ -34,76 +35,9 @@ export function AuthScreen() {
     }
   }, [isSessionPending, router, session]);
 
-  async function handleSignIn() {
-    if (!signInForm.email || !signInForm.password) {
-      toast.error("Isi email dan kata sandi dulu.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await signIn.email(
-        {
-          email: signInForm.email,
-          password: signInForm.password,
-          callbackURL: "/dashboard",
-        },
-        {
-          onError: (context) => {
-            throw new Error(context.error.message);
-          },
-        }
-      );
-
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      toast.success("Berhasil masuk ke Warung OS.");
-      router.replace("/dashboard");
-      router.refresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Gagal masuk.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleSignUp() {
-    if (!signUpForm.name || !signUpForm.email || signUpForm.password.length < 8) {
-      toast.error("Lengkapi nama, email, dan password minimal 8 karakter.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await signUp.email(
-        {
-          name: signUpForm.name,
-          email: signUpForm.email,
-          password: signUpForm.password,
-          callbackURL: "/dashboard",
-        },
-        {
-          onError: (context) => {
-            throw new Error(context.error.message);
-          },
-        }
-      );
-
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      toast.success("Akun berhasil dibuat.");
-      router.replace("/dashboard");
-      router.refresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Gagal membuat akun.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  useEffect(() => {
+    setMode(queryMode);
+  }, [queryMode]);
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 lg:px-6">
@@ -188,94 +122,114 @@ export function AuthScreen() {
               </button>
             </div>
 
+            {authError ? (
+              <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                {authError}
+              </div>
+            ) : null}
+
             {mode === "signin" ? (
-              <div className="space-y-4">
+              <form action="/api/session/sign-in" method="post" className="space-y-4">
+                <input type="hidden" name="callbackURL" value="/dashboard" />
                 <div className="grid gap-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
+                    name="email"
                     type="email"
                     value={signInForm.email}
                     onChange={(event) =>
                       setSignInForm((current) => ({ ...current, email: event.target.value }))
                     }
+                    autoComplete="email"
                     className="h-12 rounded-2xl bg-white/80"
                     placeholder="warung@email.com"
+                    required
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="signin-password">Kata sandi</Label>
                   <Input
                     id="signin-password"
+                    name="password"
                     type="password"
                     value={signInForm.password}
                     onChange={(event) =>
                       setSignInForm((current) => ({ ...current, password: event.target.value }))
                     }
+                    autoComplete="current-password"
                     className="h-12 rounded-2xl bg-white/80"
                     placeholder="Minimal 8 karakter"
+                    required
                   />
                 </div>
                 <Button
-                  type="button"
+                  type="submit"
                   size="lg"
                   className="h-12 w-full rounded-2xl"
-                  onClick={() => void handleSignIn()}
-                  disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Memproses..." : "Masuk ke dashboard"}
+                  Masuk ke dashboard
                 </Button>
-              </div>
+              </form>
             ) : (
-              <div className="space-y-4">
+              <form action="/api/session/sign-up" method="post" className="space-y-4">
+                <input type="hidden" name="callbackURL" value="/dashboard" />
                 <div className="grid gap-2">
                   <Label htmlFor="signup-name">Nama pemilik</Label>
                   <Input
                     id="signup-name"
+                    name="name"
                     value={signUpForm.name}
                     onChange={(event) =>
                       setSignUpForm((current) => ({ ...current, name: event.target.value }))
                     }
+                    autoComplete="name"
                     className="h-12 rounded-2xl bg-white/80"
                     placeholder="Ibu Sari"
+                    required
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
                     id="signup-email"
+                    name="email"
                     type="email"
                     value={signUpForm.email}
                     onChange={(event) =>
                       setSignUpForm((current) => ({ ...current, email: event.target.value }))
                     }
+                    autoComplete="email"
                     className="h-12 rounded-2xl bg-white/80"
                     placeholder="warung@email.com"
+                    required
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="signup-password">Kata sandi</Label>
                   <Input
                     id="signup-password"
+                    name="password"
                     type="password"
                     value={signUpForm.password}
                     onChange={(event) =>
                       setSignUpForm((current) => ({ ...current, password: event.target.value }))
                     }
+                    autoComplete="new-password"
                     className="h-12 rounded-2xl bg-white/80"
                     placeholder="Minimal 8 karakter"
+                    minLength={8}
+                    required
                   />
                 </div>
                 <Button
-                  type="button"
+                  type="submit"
                   size="lg"
                   className="h-12 w-full rounded-2xl"
-                  onClick={() => void handleSignUp()}
-                  disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Memproses..." : "Buat akun baru"}
+                  Buat akun baru
                 </Button>
-              </div>
+              </form>
             )}
           </CardContent>
         </Card>
