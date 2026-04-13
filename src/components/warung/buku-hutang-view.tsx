@@ -31,11 +31,28 @@ const emptyDraft: DebtDraft = {
 };
 
 export function BukuHutangView() {
-  const { debts, addDebt, markDebtPaid, sendDebtReminder } = useAppState();
+  const { isLoading, debts, addDebt, markDebtPaid, sendDebtReminder } = useAppState();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"semua" | "belum" | "lunas">("semua");
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState<DebtDraft>(emptyDraft);
+
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-44 rounded-[26px] bg-white/60 border border-white/60" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const filteredDebts = debts.filter((debt) => {
     const keyword = query.toLowerCase();
@@ -247,8 +264,8 @@ export function BukuHutangView() {
                         try {
                           const reminded = await sendDebtReminder(debt.id);
                           if (reminded) {
-                            toast.success("Simulasi pengingat WhatsApp terkirim.", {
-                              description: `Pesan sopan untuk ${reminded.borrowerName} dipicu dari frontend.`,
+                            toast.success("Mengirim pengingat via WhatsApp...", {
+                              description: `Pesan pengingat untuk ${reminded.borrowerName} akan terbuka di aplikasi WhatsApp.`,
                             });
                           }
                         } catch (error) {

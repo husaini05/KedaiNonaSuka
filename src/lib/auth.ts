@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { Pool } from "@neondatabase/serverless";
 
 const globalForAuth = globalThis as typeof globalThis & {
   __warungosAuthPool?: Pool;

@@ -8,7 +8,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { formatCurrency, formatDateTime, formatTime } from "@/lib/format";
 
 export function DashboardView() {
-  const { debts, lowStockProducts, products, transactions } = useAppState();
+  const { isLoading, debts, lowStockProducts, products, transactions } = useAppState();
+
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
+          ))}
+        </div>
+        <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="h-72 rounded-[26px] bg-white/60 border border-white/60" />
+          <div className="space-y-4">
+            <div className="h-36 rounded-[26px] bg-white/60 border border-white/60" />
+            <div className="h-36 rounded-[26px] bg-white/60 border border-white/60" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const todayTransactions = transactions.filter((transaction) => {
     const value = new Date(transaction.createdAt);

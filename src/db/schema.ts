@@ -35,6 +35,9 @@ export const transactions = pgTable("transactions", {
   userId: text("user_id").notNull(),
   total: integer("total").notNull(),
   paymentMethod: text("payment_method").notNull(),
+  customerName: text("customer_name"),
+  customerPhone: text("customer_phone"),
+  customerAddress: text("customer_address"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
 });
 

@@ -3,6 +3,7 @@ export type PaymentMethod = "Tunai" | "QRIS" | "Transfer";
 export type ProductCategory =
   | "Makanan"
   | "Minuman"
+  | "Jus Segar"
   | "Sembako"
   | "Kebutuhan Harian";
 
@@ -36,6 +37,9 @@ export interface Transaction {
   total: number;
   createdAt: string;
   items: TransactionItem[];
+  customerName?: string;
+  customerPhone?: string;
+  customerAddress?: string;
 }
 
 export interface Debt {

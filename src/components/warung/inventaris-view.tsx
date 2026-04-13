@@ -144,7 +144,7 @@ function ProductForm({
 }
 
 export function InventarisView() {
-  const { products, addProduct, updateProduct, restockProduct, lowStockProducts } = useAppState();
+  const { isLoading, products, addProduct, updateProduct, restockProduct, lowStockProducts } = useAppState();
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState<ProductDraft>(emptyDraft);
@@ -152,6 +152,20 @@ export function InventarisView() {
   const [editDraft, setEditDraft] = useState<ProductDraft>(emptyDraft);
   const [restockTarget, setRestockTarget] = useState<Product | null>(null);
   const [restockAmount, setRestockAmount] = useState(12);
+
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
+          ))}
+        </div>
+        <div className="h-10 w-64 rounded-2xl bg-white/60" />
+        <div className="h-96 rounded-[26px] bg-white/60 border border-white/60" />
+      </div>
+    );
+  }
 
   const filteredProducts = products.filter((product) => {
     const keyword = query.toLowerCase();

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Menu, Package2, ScrollText, Settings2, ShoppingBasket, Store, Wallet } from "lucide-react";
+import { Gauge, Menu, Package2, ScrollText, Settings2, ShoppingBasket, Wallet } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sheet,
@@ -24,6 +24,7 @@ const navigation = [
   { href: "/laporan", label: "Laporan", icon: ScrollText },
   { href: "/pengaturan", label: "Pengaturan", icon: Settings2 },
 ];
+
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": {
@@ -65,12 +66,21 @@ export function AppShell({
     <div className="min-h-screen">
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px] gap-4 p-3 lg:p-5">
         <aside className="glass-panel fixed top-5 hidden h-[calc(100vh-2.5rem)] w-[292px] shrink-0 overflow-hidden rounded-[30px] border border-white/60 p-5 shadow-[0_32px_80px_-50px_rgba(68,39,20,0.65)] lg:flex lg:flex-col">
-          <div className="rounded-[22px] bg-sidebar px-4 py-3 text-sidebar-foreground">
+          <div className="rounded-[22px] bg-sidebar px-4 py-3.5 text-sidebar-foreground border border-sidebar-border">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-                <Store className="size-4" />
+              <div className="flex size-10 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground text-xl leading-none shadow-[0_4px_12px_-4px_rgba(255,154,60,0.45)]">
+                🍽️
               </div>
-              <p className="truncate text-sm font-medium">{settings.storeName}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold leading-tight text-sidebar-foreground">
+                  {settings.storeName}
+                </p>
+                {settings.storeTagline && (
+                  <p className="truncate text-[11px] text-sidebar-foreground/55 mt-0.5">
+                    {settings.storeTagline}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -86,7 +96,7 @@ export function AppShell({
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-[0_20px_45px_-28px_rgba(186,92,35,0.75)]"
+                      ? "bg-primary text-primary-foreground shadow-[0_16px_36px_-22px_rgba(232,130,26,0.80)]"
                       : "text-foreground/70 hover:bg-white/50 hover:text-foreground"
                   )}
                 >
@@ -99,11 +109,13 @@ export function AppShell({
 
           <AccountPanel />
 
-          <div className="mt-4 rounded-[26px] border border-border/70 bg-white/55 p-4">
-            <p className="text-sm font-medium text-foreground/70">Transaksi tersimpan</p>
-            <p className="mt-2 font-heading text-3xl font-semibold">{transactions.length}</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Data frontend sekarang sudah tersambung ke API route handlers dan backend Postgres.
+          <div className="mt-4 rounded-[22px] border border-border/60 bg-white/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              Transaksi Tersimpan
+            </p>
+            <p className="mt-1.5 font-heading text-3xl font-bold text-primary">{transactions.length}</p>
+            <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+              Data real-time dari backend PostgreSQL.
             </p>
           </div>
         </aside>
@@ -116,17 +128,27 @@ export function AppShell({
                   <Button
                     variant="outline"
                     size="icon-lg"
-                    className="pointer-events-auto rounded-2xl bg-white/85 shadow-[0_18px_40px_-28px_rgba(68,39,20,0.75)] backdrop-blur"
+                    className="pointer-events-auto rounded-2xl bg-white/90 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.25)] backdrop-blur border border-white/70"
                   />
                 }
               >
                 <Menu className="size-5" />
               </SheetTrigger>
               <SheetContent side="left" className="w-[320px] bg-sidebar text-sidebar-foreground">
-                <SheetHeader className="px-6 pt-6">
-                  <SheetTitle className="text-sidebar-foreground">{settings.storeName}</SheetTitle>
-                  <SheetDescription className="text-sidebar-foreground/70">
-                    {activePage.title}
+                <SheetHeader className="px-6 pt-6 pb-2">
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className="flex size-10 items-center justify-center rounded-xl bg-sidebar-primary text-xl leading-none shadow-[0_4px_12px_-4px_rgba(255,154,60,0.45)]">
+                      🍽️
+                    </div>
+                    <div>
+                      <SheetTitle className="text-sidebar-foreground leading-tight">{settings.storeName}</SheetTitle>
+                      {settings.storeTagline && (
+                        <p className="text-xs text-sidebar-foreground/55 mt-0.5">{settings.storeTagline}</p>
+                      )}
+                    </div>
+                  </div>
+                  <SheetDescription className="text-sidebar-foreground/60 text-xs">
+                    {activePage.subtitle}
                   </SheetDescription>
                 </SheetHeader>
                 <div className="space-y-2 px-4 pb-6">

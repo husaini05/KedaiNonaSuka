@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { emptyAppState } from "@/lib/empty-state";
 import { AppState, Debt, DebtDraft, PaymentMethod, Product, ProductDraft, Settings, Transaction } from "@/lib/types";
+import { formatCurrency } from "@/lib/format";
 
 type CartLine = {
   product: Product;
@@ -13,6 +14,7 @@ type CartLine = {
 };
 
 type AppStateContextValue = AppState & {
+  isLoading: boolean;
   cartLines: CartLine[];
   cartTotal: number;
   lowStockProducts: Product[];
@@ -20,7 +22,11 @@ type AppStateContextValue = AppState & {
   updateCartQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   setPaymentMethod: (method: PaymentMethod) => void;
-  checkout: () => Promise<Transaction | null>;
+  checkout: (customerData?: {
+    customerName?: string;
+    customerPhone?: string;
+    customerAddress?: string;
+  }) => Promise<Transaction | null>;
   addProduct: (draft: ProductDraft) => Promise<void>;
   updateProduct: (productId: string, draft: ProductDraft) => Promise<void>;
   restockProduct: (productId: string, quantity: number) => Promise<void>;
@@ -42,17 +48,28 @@ async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T
     },
   });
 
-  const data = (await response.json().catch(() => null)) as T & { error?: string } | null;
+  const data = (await response.json().catch(() => null)) as (T & { error?: string }) | null;
 
   if (!response.ok) {
     if (response.status === 401) {
       throw new Error("UNAUTHORIZED");
     }
-
     throw new Error(data?.error ?? "Permintaan ke server gagal.");
   }
 
+  if (data === null) {
+    throw new Error("Server mengembalikan respons kosong.");
+  }
+
   return data as T;
+}
+
+// Normalise Indonesian phone numbers to international format (628xxx)
+function normalizePhoneNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("0")) return "62" + digits.slice(1);
+  if (digits.startsWith("62")) return digits;
+  return "62" + digits;
 }
 
 export function AppStateProvider({
@@ -62,26 +79,31 @@ export function AppStateProvider({
 }>) {
   const router = useRouter();
   const [state, setState] = useState<AppState>(emptyAppState);
+  const [isLoading, setIsLoading] = useState(true);
   const { data: session, isPending } = useSession();
   const sessionUserId = session?.user?.id ?? null;
 
+  // Keep a ref so async callbacks always have the latest state without
+  // needing to list state as a useCallback dep (avoids stale closures).
+  const stateRef = useRef(state);
   useEffect(() => {
-    if (isPending) {
-      return;
-    }
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    if (isPending) return;
 
     if (!sessionUserId) {
+      setIsLoading(false);
       return;
     }
 
     let isActive = true;
+    setIsLoading(true);
 
     void requestJson<{ appState: AppState }>("/api/bootstrap")
       .then((response) => {
-        if (!isActive) {
-          return;
-        }
-
+        if (!isActive) return;
         setState((current) => ({
           ...response.appState,
           cart: current.cart,
@@ -91,14 +113,14 @@ export function AppStateProvider({
         }));
       })
       .catch((error) => {
-        if (!isActive) {
-          return;
-        }
-
+        if (!isActive) return;
         if (error instanceof Error && error.message === "UNAUTHORIZED") {
           setState(emptyAppState);
           router.replace("/auth");
         }
+      })
+      .finally(() => {
+        if (isActive) setIsLoading(false);
       });
 
     return () => {
@@ -106,59 +128,55 @@ export function AppStateProvider({
     };
   }, [isPending, router, sessionUserId]);
 
-  const cartLines = state.cart.flatMap((line) => {
-    const product = state.products.find((item) => item.id === line.productId);
-    if (!product) {
-      return [];
-    }
+  // ── Computed values (memoised so they only recalculate when deps change) ──
 
-    return [
-      {
-        product,
-        quantity: line.quantity,
-        lineTotal: product.sellPrice * line.quantity,
-      },
-    ];
-  });
-
-  const cartTotal = cartLines.reduce((sum, line) => sum + line.lineTotal, 0);
-
-  const lowStockProducts = state.products.filter(
-    (product) => product.stock <= Math.max(product.minimumStock, state.settings.stockAlertThreshold)
+  const cartLines = useMemo(
+    () =>
+      state.cart.flatMap((line) => {
+        const product = state.products.find((item) => item.id === line.productId);
+        if (!product) return [];
+        return [{ product, quantity: line.quantity, lineTotal: product.sellPrice * line.quantity }];
+      }),
+    [state.cart, state.products]
   );
 
-  function addToCart(productId: string) {
+  const cartTotal = useMemo(
+    () => cartLines.reduce((sum, line) => sum + line.lineTotal, 0),
+    [cartLines]
+  );
+
+  const lowStockProducts = useMemo(
+    () =>
+      state.products.filter(
+        (product) => product.stock <= Math.max(product.minimumStock, state.settings.stockAlertThreshold)
+      ),
+    [state.products, state.settings.stockAlertThreshold]
+  );
+
+  // ── Cart actions ──────────────────────────────────────────────────────────
+
+  const addToCart = useCallback((productId: string) => {
     setState((current) => {
       const product = current.products.find((item) => item.id === productId);
-      if (!product || product.stock <= 0) {
-        return current;
-      }
+      if (!product || product.stock <= 0) return current;
 
       const existing = current.cart.find((item) => item.productId === productId);
       const nextCart = existing
         ? current.cart.map((item) =>
             item.productId === productId
-              ? {
-                  ...item,
-                  quantity: Math.min(item.quantity + 1, product.stock),
-                }
+              ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) }
               : item
           )
         : [...current.cart, { productId, quantity: 1 }];
 
-      return {
-        ...current,
-        cart: nextCart,
-      };
+      return { ...current, cart: nextCart };
     });
-  }
+  }, []);
 
-  function updateCartQuantity(productId: string, quantity: number) {
+  const updateCartQuantity = useCallback((productId: string, quantity: number) => {
     setState((current) => {
       const product = current.products.find((item) => item.id === productId);
-      if (!product) {
-        return current;
-      }
+      if (!product) return current;
 
       const nextQuantity = Math.max(0, Math.min(quantity, product.stock));
       return {
@@ -171,142 +189,142 @@ export function AppStateProvider({
               ),
       };
     });
-  }
+  }, []);
 
-  function removeFromCart(productId: string) {
+  const removeFromCart = useCallback((productId: string) => {
     setState((current) => ({
       ...current,
       cart: current.cart.filter((item) => item.productId !== productId),
     }));
-  }
+  }, []);
 
-  function setPaymentMethod(method: PaymentMethod) {
-    setState((current) => ({
-      ...current,
-      paymentMethod: method,
-    }));
-  }
+  const setPaymentMethod = useCallback((method: PaymentMethod) => {
+    setState((current) => ({ ...current, paymentMethod: method }));
+  }, []);
 
-  async function checkout() {
-    if (state.cart.length === 0) {
-      return null;
-    }
+  // ── Async mutations ───────────────────────────────────────────────────────
 
-    const response = await requestJson<{
-      transaction: Transaction;
-      products: Product[];
-    }>("/api/transactions", {
-      method: "POST",
-      body: JSON.stringify({
-        paymentMethod: state.paymentMethod,
-        items: state.cart.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-      }),
-    });
+  const checkout = useCallback(
+    async (customerData?: {
+      customerName?: string;
+      customerPhone?: string;
+      customerAddress?: string;
+    }) => {
+      const current = stateRef.current;
+      if (current.cart.length === 0) return null;
 
-    setState((current) => ({
-      ...current,
-      cart: [],
-      transactions: [response.transaction, ...current.transactions],
-      products: response.products,
-    }));
+      const response = await requestJson<{ transaction: Transaction; products: Product[] }>(
+        "/api/transactions",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            paymentMethod: current.paymentMethod,
+            items: current.cart.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+            })),
+            ...customerData,
+          }),
+        }
+      );
 
-    const transaction = response.transaction;
-    return transaction;
-  }
+      setState((prev) => ({
+        ...prev,
+        cart: [],
+        transactions: [response.transaction, ...prev.transactions],
+        products: response.products,
+      }));
 
-  async function addProduct(draft: ProductDraft) {
+      return response.transaction;
+    },
+    []
+  );
+
+  const addProduct = useCallback(async (draft: ProductDraft) => {
     const response = await requestJson<{ product: Product }>("/api/products", {
       method: "POST",
       body: JSON.stringify(draft),
     });
-
     setState((current) => ({
       ...current,
       products: [response.product, ...current.products],
     }));
-  }
+  }, []);
 
-  async function updateProduct(productId: string, draft: ProductDraft) {
+  const updateProduct = useCallback(async (productId: string, draft: ProductDraft) => {
     const response = await requestJson<{ product: Product }>(`/api/products/${productId}`, {
       method: "PATCH",
       body: JSON.stringify(draft),
     });
-
     setState((current) => ({
       ...current,
-      products: current.products.map((product) =>
-        product.id === productId ? response.product : product
-      ),
+      products: current.products.map((p) => (p.id === productId ? response.product : p)),
     }));
-  }
+  }, []);
 
-  async function restockProduct(productId: string, quantity: number) {
+  const restockProduct = useCallback(async (productId: string, quantity: number) => {
     const response = await requestJson<{ product: Product }>(
       `/api/products/${productId}/restock`,
-      {
-        method: "POST",
-        body: JSON.stringify({ quantity }),
-      }
+      { method: "POST", body: JSON.stringify({ quantity }) }
     );
-
     setState((current) => ({
       ...current,
-      products: current.products.map((product) =>
-        product.id === productId ? response.product : product
-      ),
+      products: current.products.map((p) => (p.id === productId ? response.product : p)),
     }));
-  }
+  }, []);
 
-  async function addDebt(draft: DebtDraft) {
+  const addDebt = useCallback(async (draft: DebtDraft) => {
     const response = await requestJson<{ debt: Debt }>("/api/debts", {
       method: "POST",
       body: JSON.stringify(draft),
     });
-
     setState((current) => ({
       ...current,
       debts: [response.debt, ...current.debts],
     }));
-  }
+  }, []);
 
-  async function markDebtPaid(debtId: string) {
+  const markDebtPaid = useCallback(async (debtId: string) => {
     const response = await requestJson<{ debt: Debt }>(`/api/debts/${debtId}`, {
       method: "PATCH",
       body: JSON.stringify({ isPaid: true }),
     });
-
     setState((current) => ({
       ...current,
-      debts: current.debts.map((debt) =>
-        debt.id === debtId ? response.debt : debt
-      ),
+      debts: current.debts.map((d) => (d.id === debtId ? response.debt : d)),
     }));
-  }
+  }, []);
 
-  async function sendDebtReminder(debtId: string) {
+  const sendDebtReminder = useCallback(async (debtId: string) => {
+    // Open WhatsApp BEFORE the API call so the browser doesn't block the popup
+    const debt = stateRef.current.debts.find((d) => d.id === debtId);
+    if (debt?.whatsapp) {
+      const phone = normalizePhoneNumber(debt.whatsapp);
+      if (phone.length >= 10) {
+        const dueDate = new Date(debt.dueDate).toLocaleDateString("id-ID");
+        const amount = formatCurrency(debt.amount);
+        const message = `Halo ${debt.borrowerName}, pengingat hutang sebesar ${amount} jatuh tempo ${dueDate}. Mohon segera dilunasi. Terima kasih — Kedai Nona Suka.`;
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+      }
+    }
+
     const response = await requestJson<{ debt: Debt }>(`/api/debts/${debtId}/remind`, {
       method: "POST",
     });
 
     setState((current) => ({
       ...current,
-      debts: current.debts.map((debt) =>
-        debt.id === debtId ? response.debt : debt
-      ),
+      debts: current.debts.map((d) => (d.id === debtId ? response.debt : d)),
     }));
 
     return response.debt;
-  }
+  }, []);
 
-  async function updateSettings(settings: Settings) {
+  const updateSettings = useCallback(async (settings: Settings) => {
     const response = await requestJson<{ settings: Settings }>("/api/settings", {
       method: "PUT",
       body: JSON.stringify(settings),
     });
-
     setState((current) => ({
       ...current,
       paymentMethod: response.settings.enabledPayments.includes(current.paymentMethod)
@@ -314,9 +332,9 @@ export function AppStateProvider({
         : response.settings.enabledPayments[0] ?? "Tunai",
       settings: response.settings,
     }));
-  }
+  }, []);
 
-  async function resetWorkspace() {
+  const resetWorkspace = useCallback(async () => {
     const response = await requestJson<{ appState: AppState }>("/api/bootstrap/reset", {
       method: "POST",
     });
@@ -327,30 +345,37 @@ export function AppStateProvider({
         ? current.paymentMethod
         : response.appState.paymentMethod,
     }));
-  }
+  }, []);
+
+  // ── Context value (memoised to prevent unnecessary consumer re-renders) ──
+
+  const contextValue = useMemo<AppStateContextValue>(
+    () => ({
+      ...state,
+      isLoading,
+      cartLines,
+      cartTotal,
+      lowStockProducts,
+      addToCart,
+      updateCartQuantity,
+      removeFromCart,
+      setPaymentMethod,
+      checkout,
+      addProduct,
+      updateProduct,
+      restockProduct,
+      addDebt,
+      markDebtPaid,
+      sendDebtReminder,
+      updateSettings,
+      resetWorkspace,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state, isLoading, cartLines, cartTotal, lowStockProducts]
+  );
 
   return (
-    <AppStateContext.Provider
-      value={{
-        ...state,
-        cartLines,
-        cartTotal,
-        lowStockProducts,
-        addToCart,
-        updateCartQuantity,
-        removeFromCart,
-        setPaymentMethod,
-        checkout,
-        addProduct,
-        updateProduct,
-        restockProduct,
-        addDebt,
-        markDebtPaid,
-        sendDebtReminder,
-        updateSettings,
-        resetWorkspace,
-      }}
-    >
+    <AppStateContext.Provider value={contextValue}>
       {children}
     </AppStateContext.Provider>
   );
@@ -361,6 +386,5 @@ export function useAppState() {
   if (!value) {
     throw new Error("useAppState harus dipakai di dalam AppStateProvider.");
   }
-
   return value;
 }

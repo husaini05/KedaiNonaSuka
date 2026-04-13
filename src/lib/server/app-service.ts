@@ -117,6 +117,18 @@ async function ensureTables() {
 
     ALTER TABLE store_profiles
       ADD COLUMN IF NOT EXISTS business_notes text NOT NULL DEFAULT '';
+
+    ALTER TABLE transactions
+      ADD COLUMN IF NOT EXISTS customer_name text;
+    
+    ALTER TABLE transactions
+      ADD COLUMN IF NOT EXISTS customer_phone text;
+    
+    ALTER TABLE transactions
+      ADD COLUMN IF NOT EXISTS customer_address text;
+
+    ALTER TABLE products
+      ADD COLUMN IF NOT EXISTS barcode text;
   `);
 }
 
@@ -285,6 +297,9 @@ export async function getBootstrapState(userId: string): Promise<AppState> {
       total: transaction.total,
       createdAt: transaction.createdAt,
       items: itemsByTransaction.get(transaction.id) ?? [],
+      customerName: transaction.customerName ?? undefined,
+      customerPhone: transaction.customerPhone ?? undefined,
+      customerAddress: transaction.customerAddress ?? undefined,
     })),
     debts: debtRows.map((debt) => ({
       id: debt.id,
@@ -371,6 +386,10 @@ export async function updateProduct(userId: string, productId: string, draft: Pr
 }
 
 export async function restockProduct(userId: string, productId: string, quantity: number) {
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    throw new Error("Jumlah restok harus berupa angka bulat lebih dari 0.");
+  }
+
   const [existing] = await db
     .select()
     .from(products)
@@ -407,6 +426,9 @@ export async function createTransaction(
   payload: {
     paymentMethod: PaymentMethod;
     items: Array<{ productId: string; quantity: number }>;
+    customerName?: string;
+    customerPhone?: string;
+    customerAddress?: string;
   }
 ) {
   if (payload.items.length === 0) {
@@ -446,6 +468,9 @@ export async function createTransaction(
       userId,
       total,
       paymentMethod: payload.paymentMethod,
+      customerName: payload.customerName || null,
+      customerPhone: payload.customerPhone || null,
+      customerAddress: payload.customerAddress || null,
       createdAt,
     });
 

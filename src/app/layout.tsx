@@ -21,8 +21,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Warung OS",
-  description: "Aplikasi kasir tablet-first untuk operasional warung modern.",
+  title: "Kedai Nona Suka — Kasir & Operasional",
+  description: "Sistem kasir & manajemen operasional Kedai Nona Suka. Makan enak, kantong aman.",
 };
 
 export default function RootLayout({

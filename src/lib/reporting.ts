@@ -138,18 +138,17 @@ export function buildSeries(range: ReportRange, transactions: Transaction[]) {
 }
 
 export function estimateProductVelocity(products: Product[], transactions: Transaction[]) {
-  return products.map((product) => {
-    const sold = transactions.reduce((sum, transaction) => {
-      const matchedTotal = transaction.items
-        .filter((item) => item.productId === product.id)
-        .reduce((itemSum, item) => itemSum + item.quantity, 0);
-      return sum + matchedTotal;
-    }, 0);
+  // Build a Map once — O(total items) — instead of O(products × transactions × items)
+  const soldMap = new Map<string, number>();
+  for (const transaction of transactions) {
+    for (const item of transaction.items) {
+      soldMap.set(item.productId, (soldMap.get(item.productId) ?? 0) + item.quantity);
+    }
+  }
 
-    return {
-      productId: product.id,
-      name: product.name,
-      sold,
-    };
-  });
+  return products.map((product) => ({
+    productId: product.id,
+    name: product.name,
+    sold: soldMap.get(product.id) ?? 0,
+  }));
 }
