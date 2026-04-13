@@ -84,6 +84,7 @@ function ProductForm({
           <Input
             id="product-stock"
             type="number"
+            inputMode="numeric"
             min={0}
             value={draft.stock}
             onChange={(event) => onChange({ ...draft, stock: Number(event.target.value) })}
@@ -98,6 +99,7 @@ function ProductForm({
           <Input
             id="product-buy-price"
             type="number"
+            inputMode="decimal"
             min={0}
             value={draft.buyPrice}
             onChange={(event) => onChange({ ...draft, buyPrice: Number(event.target.value) })}
@@ -109,6 +111,7 @@ function ProductForm({
           <Input
             id="product-sell-price"
             type="number"
+            inputMode="decimal"
             min={0}
             value={draft.sellPrice}
             onChange={(event) => onChange({ ...draft, sellPrice: Number(event.target.value) })}
@@ -122,6 +125,7 @@ function ProductForm({
         <Input
           id="product-minimum-stock"
           type="number"
+          inputMode="numeric"
           min={0}
           value={draft.minimumStock}
           onChange={(event) => onChange({ ...draft, minimumStock: Number(event.target.value) })}
@@ -427,6 +431,7 @@ export function InventarisView() {
               <Input
                 id="restock-amount"
                 type="number"
+                inputMode="numeric"
                 min={1}
                 value={restockAmount}
                 onChange={(event) => setRestockAmount(Number(event.target.value))}

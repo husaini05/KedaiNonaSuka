@@ -21,6 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { AccountPanel } from "@/components/auth/account-panel";
+import { BottomNav } from "@/components/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { useSession } from "@/lib/auth-client";
@@ -243,10 +244,13 @@ export function AppShell({
         </aside>
 
         {/* Main content */}
-        <main className="min-w-0 flex-1 lg:ml-[292px]">
+        <main className="min-w-0 flex-1 pb-20 lg:ml-[292px] lg:pb-0">
           {children}
         </main>
       </div>
+
+      {/* Bottom navigation — mobile only */}
+      <BottomNav />
     </div>
   );
 }

@@ -1,0 +1,43 @@
+{
+  "name": "Kedai Nona Suka",
+  "short_name": "KNS",
+  "description": "Kasir & manajemen operasional Kedai Nona Suka. Makan enak, kantong aman.",
+  "start_url": "/kasir",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fdf6ec",
+  "theme_color": "#E8821A",
+  "orientation": "portrait-primary",
+  "lang": "id-ID",
+  "categories": ["business", "food"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Kasir",
+      "short_name": "Kasir",
+      "description": "Buka layar kasir",
+      "url": "/kasir",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Lihat ringkasan hari ini",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any" }]
+    }
+  ]
+}

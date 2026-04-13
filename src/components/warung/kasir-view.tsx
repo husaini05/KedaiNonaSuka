@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BanknoteArrowDown, CreditCard, Minus, PackageSearch, Plus, Printer, ReceiptText, Search, X, MessageCircle } from "lucide-react";
+import { BanknoteArrowDown, CreditCard, Minus, PackageSearch, Plus, Printer, ReceiptText, Search, Share2, ShoppingBasket, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 
@@ -135,6 +135,12 @@ function KasirSkeleton() {
   );
 }
 
+function vibrate(ms = 30) {
+  if (typeof window !== "undefined" && "vibrate" in navigator) {
+    navigator.vibrate(ms);
+  }
+}
+
 export function KasirView() {
   const {
     isLoading,
@@ -183,24 +189,42 @@ export function KasirView() {
     setConfirmOpen(true);
   }
 
-  function handleSendWhatsApp() {
-    if (!lastTransaction) return;
+  function buildReceiptText() {
+    if (!lastTransaction) return "";
     const storeName = settings.storeName || "Warung Saya";
     const date = new Date(lastTransaction.createdAt).toLocaleDateString("id-ID");
-    const itemsText = lastTransaction.items.map(item => 
-      `${item.productName} x${item.quantity} = ${formatCurrency(item.unitPrice * item.quantity)}`
-    ).join("%0A");
+    const itemsLines = lastTransaction.items
+      .map((item) => `${item.productName} x${item.quantity} = ${formatCurrency(item.unitPrice * item.quantity)}`)
+      .join("\n");
     const total = formatCurrency(lastTransaction.total);
     const payment = paymentLabels[lastTransaction.paymentMethod];
-    
     let paymentText = `Pembayaran: ${payment}`;
     if (lastTransaction.paymentMethod === "Tunai" && lastCashReceived > 0) {
-      paymentText += `%0AUang Diterima: ${formatCurrency(lastCashReceived)}`;
-      paymentText += `%0AKembalian: ${formatCurrency(lastChange)}`;
+      paymentText += `\nUang Diterima: ${formatCurrency(lastCashReceived)}`;
+      paymentText += `\nKembalian: ${formatCurrency(lastChange)}`;
     }
-    
-    const text = `*Struk ${storeName}*%0A${date}%0A%0A${itemsText}%0A%0ATotal: *${total}*%0A${paymentText}%0A%0ATerima kasih!`;
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    return `*Struk ${storeName}*\n${date}\n\n${itemsLines}\n\nTotal: *${total}*\n${paymentText}\n\nTerima kasih!`;
+  }
+
+  async function handleShareReceipt() {
+    if (!lastTransaction) return;
+    const text = buildReceiptText();
+    const storeName = settings.storeName || "Warung Saya";
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: `Struk ${storeName}`, text });
+        setCheckoutSuccessOpen(false);
+        return;
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        // Non-abort error — fall through to WhatsApp
+      }
+    }
+
+    // Fallback: open WhatsApp
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encoded}`, "_blank");
     setCheckoutSuccessOpen(false);
   }
 
@@ -346,6 +370,7 @@ export function KasirView() {
         return items;
       }, []);
 
+      vibrate(60);
       toast.success("Transaksi berhasil disimpan.", {
         description: `${transaction.items.length} produk masuk ke penjualan ${paymentLabels[transaction.paymentMethod]}.`,
       });
@@ -376,8 +401,26 @@ export function KasirView() {
     }
   }
 
+  const totalQty = cartLines.reduce((s, l) => s + l.quantity, 0);
+
   return (
     <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
+
+      {/* ── Floating cart FAB (mobile only, when cart has items) ── */}
+      {cartLines.length > 0 && (
+        <div className="fixed bottom-[4.5rem] right-4 z-40 lg:hidden" style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" }}>
+          <button
+            type="button"
+            onClick={() => document.getElementById("cart-section")?.scrollIntoView({ behavior: "smooth" })}
+            className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-white shadow-[0_8px_24px_-8px_rgba(232,130,26,0.6)] active:scale-95 transition-transform"
+          >
+            <ShoppingBasket className="size-4 shrink-0" />
+            <span className="text-sm font-bold">{totalQty}</span>
+            <span className="text-sm font-semibold">{formatCurrency(cartTotal)}</span>
+          </button>
+        </div>
+      )}
+
       <div>
         <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
           <CardHeader className="flex flex-col gap-4">
@@ -428,6 +471,7 @@ export function KasirView() {
                     product={product}
                     onAdd={() => {
                       addToCart(product.id);
+                      vibrate(30);
                       toast.success(`${product.name} ditambahkan ke keranjang.`, {
                         description: `Stok tersedia ${product.stock} pcs.`,
                       });
@@ -448,7 +492,7 @@ export function KasirView() {
         </Card>
       </div>
 
-      <div>
+      <div id="cart-section">
         <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-48px_rgba(66,38,20,0.6)]">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -686,9 +730,9 @@ export function KasirView() {
               <Printer className="size-4 mr-2" />
               Cetak Struk
             </Button>
-            <Button type="button" onClick={() => handleSendWhatsApp()}>
-              <MessageCircle className="size-4 mr-2" />
-              Kirim WhatsApp
+            <Button type="button" onClick={() => void handleShareReceipt()}>
+              <Share2 className="size-4 mr-2" />
+              Bagikan Struk
             </Button>
           </DialogFooter>
         </DialogContent>

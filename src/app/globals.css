@@ -138,6 +138,20 @@
   ::selection {
     background: rgba(232, 130, 26, 0.20);
   }
+
+  /* Prevent iOS/Android from zooming in on input focus */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+
+  /* Contain scroll bounce inside scroll containers, not the whole page */
+  [data-radix-scroll-area-viewport],
+  .overflow-y-auto,
+  .overflow-auto {
+    overscroll-behavior: contain;
+  }
 }
 
 @layer components {

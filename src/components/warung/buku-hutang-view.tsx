@@ -162,6 +162,8 @@ export function BukuHutangView() {
                     <Label htmlFor="borrower-wa">Nomor WhatsApp</Label>
                     <Input
                       id="borrower-wa"
+                      type="tel"
+                      inputMode="tel"
                       value={draft.whatsapp}
                       onChange={(event) => setDraft({ ...draft, whatsapp: event.target.value })}
                       placeholder="08xxxxxxxxxx"
@@ -174,6 +176,7 @@ export function BukuHutangView() {
                       <Input
                         id="borrower-amount"
                         type="number"
+                        inputMode="decimal"
                         min={0}
                         value={draft.amount}
                         onChange={(event) => setDraft({ ...draft, amount: Number(event.target.value) })}

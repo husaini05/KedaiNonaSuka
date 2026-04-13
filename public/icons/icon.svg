@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="112" fill="#E8821A"/>
+  <!-- Steam lines -->
+  <path d="M180 155 Q192 138 180 122" stroke="white" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/>
+  <path d="M256 145 Q268 128 256 112" stroke="white" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/>
+  <path d="M332 155 Q344 138 332 122" stroke="white" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/>
+  <!-- Bowl body -->
+  <path d="M128 228 Q128 372 256 372 Q384 372 384 228Z" fill="white"/>
+  <!-- Bowl rim -->
+  <rect x="116" y="210" width="280" height="28" rx="14" fill="white"/>
+  <!-- Plate base -->
+  <rect x="174" y="382" width="164" height="20" rx="10" fill="rgba(255,255,255,0.85)"/>
+  <!-- KNS label -->
+  <text x="256" y="472" font-size="60" text-anchor="middle" fill="white" font-weight="bold" font-family="Arial, Helvetica, sans-serif" letter-spacing="6" opacity="0.9">KNS</text>
+</svg>
