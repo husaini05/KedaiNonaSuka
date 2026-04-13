@@ -1,229 +1,237 @@
 "use client";
 
-import { AlertTriangle, ArrowRightLeft, Clock3, ReceiptText, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, ReceiptText, WalletCards } from "lucide-react";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDateTime, formatTime } from "@/lib/format";
 
+function SkeletonCard({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-[24px] border border-border/50 bg-white ${className}`} />;
+}
+
 export function DashboardView() {
   const { isLoading, debts, lowStockProducts, products, transactions } = useAppState();
 
   if (isLoading) {
     return (
-      <div className="animate-pulse space-y-4">
+      <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} className="h-28" />)}
         </div>
-        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="h-72 rounded-[26px] bg-white/60 border border-white/60" />
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <SkeletonCard className="h-72" />
           <div className="space-y-4">
-            <div className="h-36 rounded-[26px] bg-white/60 border border-white/60" />
-            <div className="h-36 rounded-[26px] bg-white/60 border border-white/60" />
+            <SkeletonCard className="h-36" />
+            <SkeletonCard className="h-36" />
           </div>
         </div>
       </div>
     );
   }
 
-  const todayTransactions = transactions.filter((transaction) => {
-    const value = new Date(transaction.createdAt);
-    const now = new Date();
-    return value.toDateString() === now.toDateString();
+  const todayTransactions = transactions.filter((t) => {
+    return new Date(t.createdAt).toDateString() === new Date().toDateString();
   });
-
-  const todaySales = todayTransactions.reduce(
-    (sum, transaction) => sum + transaction.total,
-    0
-  );
-  const outstandingDebt = debts
-    .filter((debt) => !debt.isPaid)
-    .reduce((sum, debt) => sum + debt.amount, 0);
+  const todaySales = todayTransactions.reduce((sum, t) => sum + t.total, 0);
+  const outstandingDebt = debts.filter((d) => !d.isPaid).reduce((sum, d) => sum + d.amount, 0);
   const latestTransaction = transactions[0] ?? null;
-  const latestDebts = debts.slice(0, 4);
+  const latestDebts = debts.filter((d) => !d.isPaid).slice(0, 4);
 
   return (
-    <div className="space-y-4">
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-5">
+      {/* ── Stat cards ── */}
+      <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Omzet hari ini"
           value={formatCurrency(todaySales)}
-          description="Akumulasi transaksi yang sudah masuk sejak pagi."
+          description={`${todayTransactions.length} transaksi masuk hari ini`}
         />
         <StatCard
-          title="Transaksi hari ini"
-          value={`${todayTransactions.length} transaksi`}
-          description="Ringkasan cepat untuk memantau ritme kasir."
+          title="Total transaksi"
+          value={`${transactions.length}`}
+          description="Semua transaksi yang pernah tercatat"
           tone="accent"
         />
         <StatCard
           title="Stok menipis"
           value={`${lowStockProducts.length} item`}
-          description="Barang yang mulai rawan kosong dan sebaiknya segera dicek."
+          description="Barang yang mendekati batas minimum"
           tone="warn"
         />
         <StatCard
           title="Kasbon aktif"
           value={formatCurrency(outstandingDebt)}
-          description="Total piutang pelanggan yang belum lunas."
+          description="Total piutang pelanggan belum lunas"
         />
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-          <CardHeader>
-            <CardTitle className="font-heading text-2xl">Aktivitas terbaru</CardTitle>
-            <CardDescription>
-              Semua ringkasan yang sebelumnya membuat layar kasir terasa penuh dipindahkan ke sini.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="rounded-[26px] bg-foreground px-5 py-5 text-background">
-              <div className="flex items-center gap-2 text-background/75">
-                <ReceiptText className="size-4 text-primary" />
-                <p className="text-sm font-medium">Transaksi terakhir</p>
-              </div>
+      {/* ── Main content ── */}
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
 
+        {/* Aktivitas terbaru */}
+        <Card className="border-border/60 bg-white shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-heading text-xl">Aktivitas terbaru</CardTitle>
+            <CardDescription>Transaksi terakhir dan timeline penjualan hari ini.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Latest transaction highlight */}
+            <div className="rounded-[20px] bg-foreground p-5 text-background">
+              <div className="flex items-center gap-2 text-background/60">
+                <ReceiptText className="size-4 text-primary" />
+                <p className="text-xs font-semibold uppercase tracking-wider">Transaksi terakhir</p>
+              </div>
               {latestTransaction ? (
                 <>
-                  <p className="mt-3 font-heading text-4xl font-semibold">
+                  <p className="mt-3 font-heading text-3xl font-bold">
                     {formatCurrency(latestTransaction.total)}
                   </p>
-                  <p className="mt-2 text-sm text-background/75">
-                    {latestTransaction.paymentMethod} • {formatTime(latestTransaction.createdAt)}
+                  <p className="mt-1 text-xs text-background/55">
+                    {latestTransaction.paymentMethod} · {formatTime(latestTransaction.createdAt)}
                   </p>
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
                     {latestTransaction.items.map((item) => (
                       <div
                         key={`${latestTransaction.id}-${item.productId}`}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span>
-                          {item.productName} x{item.quantity}
+                        <span className="text-background/75">
+                          {item.productName}
+                          <span className="ml-1.5 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                            ×{item.quantity}
+                          </span>
                         </span>
-                        <span className="font-medium">
-                          {formatCurrency(item.unitPrice * item.quantity)}
-                        </span>
+                        <span className="font-medium">{formatCurrency(item.unitPrice * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
-                <p className="mt-4 text-sm text-background/75">
+                <p className="mt-4 text-sm text-background/50">
                   Belum ada transaksi yang tersimpan.
                 </p>
               )}
             </div>
 
-            <div className="rounded-[26px] border border-border/70 bg-white/82 p-5">
-              <div className="flex items-center gap-2">
+            {/* Timeline */}
+            <div>
+              <div className="mb-3 flex items-center gap-2">
                 <ArrowRightLeft className="size-4 text-primary" />
-                <p className="font-medium">Timeline transaksi</p>
+                <p className="text-sm font-semibold">Timeline transaksi</p>
               </div>
-              <div className="mt-5 space-y-4">
-                {transactions.slice(0, 5).map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-start justify-between gap-3 rounded-[20px] bg-muted/50 px-4 py-3"
-                  >
-                    <div>
-                      <p className="font-medium">{formatCurrency(transaction.total)}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {transaction.items.length} produk • {transaction.paymentMethod}
+              <div className="relative space-y-2">
+                {/* Vertical line */}
+                {transactions.length > 1 && (
+                  <div className="absolute left-[15px] top-5 bottom-5 w-px bg-border/60" />
+                )}
+                {transactions.slice(0, 5).map((t, idx) => (
+                  <div key={t.id} className="flex items-start gap-3">
+                    {/* Dot */}
+                    <div className={`relative z-10 mt-1 flex size-[30px] shrink-0 items-center justify-center rounded-full border-2 ${idx === 0 ? "border-primary bg-primary/10" : "border-border bg-white"}`}>
+                      <div className={`size-2 rounded-full ${idx === 0 ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                    </div>
+                    <div className="flex-1 rounded-[16px] border border-border/60 bg-white/80 px-4 py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold">{formatCurrency(t.total)}</p>
+                        <p className="text-xs text-muted-foreground">{formatDateTime(t.createdAt)}</p>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t.items.length} produk · {t.paymentMethod}
                       </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDateTime(transaction.createdAt)}
-                    </p>
                   </div>
                 ))}
+                {transactions.length === 0 && (
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    Belum ada transaksi hari ini.
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Right column */}
         <div className="space-y-4">
-          <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-            <CardHeader>
-              <CardTitle className="font-heading text-2xl">Stok perlu perhatian</CardTitle>
-              <CardDescription>
-                Cocok dibuka sebelum restok atau saat mau tutup toko.
-              </CardDescription>
+
+          {/* Stok menipis */}
+          <Card className="border-border/60 bg-white shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-heading text-xl">Stok perlu perhatian</CardTitle>
+              <CardDescription>Restok sebelum kehabisan dan kehilangan penjualan.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {lowStockProducts.length > 0 ? (
                 lowStockProducts.slice(0, 5).map((product) => (
                   <div
                     key={product.id}
-                    className="flex items-center justify-between rounded-[20px] border border-border/70 bg-white/80 px-4 py-3"
+                    className="flex items-center justify-between rounded-[16px] border border-orange-100 bg-orange-50/60 px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-                        <AlertTriangle className="size-4" />
+                      <div className="flex size-8 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                        <AlertTriangle className="size-3.5" />
                       </div>
                       <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">{product.category}</p>
+                        <p className="text-sm font-medium">{product.name}</p>
+                        <p className="text-xs text-muted-foreground">{product.category}</p>
                       </div>
                     </div>
-                    <Badge className="rounded-full bg-primary text-primary-foreground">
-                      {product.stock} / min {product.minimumStock}
+                    <Badge className="rounded-full bg-primary/15 text-primary border-0 text-xs font-semibold">
+                      {product.stock} / {product.minimumStock}
                     </Badge>
                   </div>
                 ))
               ) : (
-                <div className="rounded-[20px] bg-accent px-4 py-5 text-sm text-accent-foreground">
-                  Semua stok aman. Belum ada produk yang menyentuh batas minimum.
+                <div className="rounded-[16px] border border-green-100 bg-green-50 px-4 py-4 text-sm font-medium text-green-700">
+                  ✓ Semua stok aman. Tidak ada yang menyentuh batas minimum.
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-            <CardHeader>
-              <CardTitle className="font-heading text-2xl">Kasbon terbaru</CardTitle>
-              <CardDescription>
-                Ringkas untuk follow-up pelanggan tanpa masuk ke halaman penuh buku hutang.
-              </CardDescription>
+          {/* Kasbon terbaru */}
+          <Card className="border-border/60 bg-white shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-heading text-xl">Kasbon belum lunas</CardTitle>
+              <CardDescription>Follow-up pelanggan tanpa buka halaman penuh.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {latestDebts.map((debt) => (
-                <div
-                  key={debt.id}
-                  className="flex items-start justify-between gap-3 rounded-[20px] border border-border/70 bg-white/80 px-4 py-3"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <WalletCards className="size-4 text-primary" />
-                      <p className="font-medium">{debt.borrowerName}</p>
+            <CardContent className="space-y-2">
+              {latestDebts.length > 0 ? (
+                latestDebts.map((debt) => (
+                  <div
+                    key={debt.id}
+                    className="flex items-start justify-between gap-3 rounded-[16px] border border-border/60 bg-muted/30 px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <WalletCards className="size-4 shrink-0 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">{debt.borrowerName}</p>
+                        <p className="text-xs text-muted-foreground">{debt.whatsapp}</p>
+                      </div>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{debt.whatsapp}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{formatCurrency(debt.amount)}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {debt.isPaid ? "Lunas" : "Belum lunas"}
+                    <p className="shrink-0 text-sm font-semibold text-foreground">
+                      {formatCurrency(debt.amount)}
                     </p>
                   </div>
+                ))
+              ) : (
+                <div className="rounded-[16px] border border-green-100 bg-green-50 px-4 py-4 text-sm font-medium text-green-700">
+                  ✓ Tidak ada kasbon yang belum lunas.
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
 
-          <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-            <CardContent className="flex items-center justify-between gap-4 p-5">
-              <div>
-                <p className="text-sm text-muted-foreground">SKU aktif</p>
-                <p className="mt-2 font-heading text-3xl font-semibold">{products.length} produk</p>
-              </div>
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-foreground text-background">
-                <Clock3 className="size-5" />
-              </div>
-            </CardContent>
-          </Card>
+          {/* SKU aktif */}
+          <div className="rounded-[20px] border border-border/60 bg-white px-5 py-4 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              SKU Aktif
+            </p>
+            <p className="mt-1.5 font-heading text-3xl font-bold">{products.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">produk siap jual di inventaris</p>
+          </div>
         </div>
       </div>
     </div>

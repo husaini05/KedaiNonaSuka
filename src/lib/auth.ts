@@ -87,7 +87,12 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }: { user: { email: string; name?: string }; url: string }) => {
+      if (!process.env.RESEND_API_KEY) {
+        console.log(`[Kedai Nona Suka] Link verifikasi untuk ${user.email}: ${url}`);
+        return;
+      }
       const resend = new Resend(process.env.RESEND_API_KEY);
+      try {
       const firstName = (user.name ?? user.email).split(" ")[0];
       await resend.emails.send({
         from: "Kedai Nona Suka <onboarding@resend.dev>",
@@ -152,6 +157,10 @@ export const auth = betterAuth({
 </body>
 </html>`,
       });
+      } catch (err) {
+        console.error(`[Kedai Nona Suka] Gagal kirim email ke ${user.email}:`, err);
+        console.log(`[Kedai Nona Suka] Fallback link: ${url}`);
+      }
     },
   },
 });

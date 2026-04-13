@@ -51,7 +51,7 @@
 :root {
   --background: #fdf6ec;
   --foreground: #1a1a1a;
-  --card: rgba(255, 252, 245, 0.92);
+  --card: #ffffff;
   --card-foreground: #1a1a1a;
   --popover: #fffcf5;
   --popover-foreground: #1a1a1a;
@@ -64,7 +64,7 @@
   --accent: #fff3e0;
   --accent-foreground: #7a3d0a;
   --destructive: #d63b2f;
-  --border: rgba(232, 130, 26, 0.15);
+  --border: rgba(0, 0, 0, 0.09);
   --input: rgba(255, 252, 245, 0.96);
   --ring: rgba(232, 130, 26, 0.45);
   --chart-1: #e8821a;
