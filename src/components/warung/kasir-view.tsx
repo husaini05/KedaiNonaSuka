@@ -110,7 +110,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 
 function KasirSkeleton() {
   return (
-    <div className="grid gap-4 xl:grid-cols-[1.7fr_0.95fr] animate-pulse">
+    <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr] animate-pulse">
       <div className="rounded-[26px] border border-white/60 bg-white/60 p-6 space-y-4">
         <div className="h-6 w-48 rounded-full bg-muted" />
         <div className="h-4 w-72 rounded-full bg-muted/70" />
@@ -119,7 +119,7 @@ function KasirSkeleton() {
             <div key={i} className="h-9 w-24 rounded-full bg-muted/70" />
           ))}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3 pt-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 pt-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-[168px] rounded-[24px] bg-muted/50" />
           ))}
@@ -377,51 +377,51 @@ export function KasirView() {
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[1.7fr_0.95fr]">
+    <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
       <div>
         <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-          <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle className="font-heading text-2xl">Menu Kedai Nona Suka</CardTitle>
-              <CardDescription>
-                Tap item untuk tambah ke keranjang. Filter per kategori atau cari nama menu.
-              </CardDescription>
-            </div>
-
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <div className="relative min-w-[220px]">
+          <CardHeader className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="font-heading text-xl md:text-2xl">Menu Kedai Nona Suka</CardTitle>
+                <CardDescription className="hidden sm:block">
+                  Tap item untuk tambah ke keranjang. Filter per kategori atau cari nama menu.
+                </CardDescription>
+              </div>
+              <div className="relative w-full sm:min-w-[220px] sm:w-auto">
                 <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Cari produk atau kategori"
-                  className="h-11 rounded-2xl border-border/80 bg-white/80 pl-9"
+                  placeholder="Cari produk..."
+                  className="h-10 rounded-2xl border-border/80 bg-white/80 pl-9"
                 />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {categoryLabels.map((item) => (
-                  <Button
-                    key={item.value}
-                    type="button"
-                    variant={category === item.value ? "default" : "outline"}
-                    className={cn(
-                      "rounded-full gap-1.5 text-sm",
-                      category === item.value
-                        ? "shadow-[0_8px_24px_-10px_rgba(232,130,26,0.55)]"
-                        : "hover:border-primary/40 hover:bg-primary/5"
-                    )}
-                    onClick={() => setCategory(item.value)}
-                  >
-                    <span>{item.emoji}</span>
-                    {item.label}
-                  </Button>
-                ))}
-              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {categoryLabels.map((item) => (
+                <Button
+                  key={item.value}
+                  type="button"
+                  variant={category === item.value ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "rounded-full gap-1.5 text-xs sm:text-sm",
+                    category === item.value
+                      ? "shadow-[0_8px_24px_-10px_rgba(232,130,26,0.55)]"
+                      : "hover:border-primary/40 hover:bg-primary/5"
+                  )}
+                  onClick={() => setCategory(item.value)}
+                >
+                  <span>{item.emoji}</span>
+                  {item.label}
+                </Button>
+              ))}
             </div>
           </CardHeader>
           <CardContent>
             {filteredProducts.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -460,7 +460,7 @@ export function KasirView() {
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
-            <ScrollArea className="h-[300px] rounded-[22px] border border-border/70 bg-white/60 p-3">
+            <ScrollArea className="h-[260px] lg:h-[320px] rounded-[22px] border border-border/70 bg-white/60 p-3">
               {cartLines.length > 0 ? (
                 <div className="space-y-3">
                   {cartLines.map((line) => (
@@ -607,7 +607,7 @@ export function KasirView() {
         </Card>
       </div>
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-w-md rounded-[28px] p-0">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="font-heading text-2xl">Konfirmasi Transaksi</DialogTitle>
             <DialogDescription>
@@ -650,7 +650,7 @@ export function KasirView() {
         </DialogContent>
       </Dialog>
       <Dialog open={checkoutSuccessOpen} onOpenChange={setCheckoutSuccessOpen}>
-        <DialogContent className="max-w-md rounded-[28px] p-0">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="font-heading text-2xl">Transaksi Berhasil!</DialogTitle>
             <DialogDescription>

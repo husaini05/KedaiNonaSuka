@@ -141,7 +141,7 @@ export function BukuHutangView() {
                 <WalletCards className="size-4" />
                 Tambah kasbon
               </DialogTrigger>
-              <DialogContent className="max-w-xl rounded-[28px] p-0">
+              <DialogContent className="w-[calc(100vw-2rem)] max-w-xl rounded-[28px] p-0">
                 <DialogHeader className="p-6 pb-0">
                   <DialogTitle className="font-heading text-2xl">Catat hutang baru</DialogTitle>
                   <DialogDescription>

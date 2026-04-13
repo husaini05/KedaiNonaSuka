@@ -28,7 +28,7 @@ export function StatCard({
           <p className="text-sm font-medium opacity-80">{title}</p>
           <ArrowUpRight className="size-4 opacity-70" />
         </div>
-        <p className="font-heading text-3xl font-semibold tracking-tight">{value}</p>
+        <p className="font-heading text-2xl md:text-3xl font-semibold tracking-tight">{value}</p>
         <p className="text-sm opacity-75">{description}</p>
       </CardContent>
     </Card>

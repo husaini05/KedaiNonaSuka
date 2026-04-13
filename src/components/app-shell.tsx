@@ -186,7 +186,7 @@ export function AppShell({
             </Sheet>
           </div>
 
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pt-16 lg:pt-0">{children}</main>
         </div>
       </div>
     </div>

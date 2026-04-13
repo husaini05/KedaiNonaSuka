@@ -286,7 +286,7 @@ export function InventarisView() {
                 <PackagePlus className="size-4" />
                 Tambah barang
               </DialogTrigger>
-              <DialogContent className="max-w-2xl rounded-[28px] p-0">
+              <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
                 <DialogHeader className="p-6 pb-0">
                   <DialogTitle className="font-heading text-2xl">Tambah produk baru</DialogTitle>
                   <DialogDescription>
@@ -306,6 +306,7 @@ export function InventarisView() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto -mx-6 px-6">
           <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
@@ -385,11 +386,12 @@ export function InventarisView() {
               })}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
       <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => !open && setEditingProduct(null)}>
-        <DialogContent className="max-w-2xl rounded-[28px] p-0">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="font-heading text-2xl">Edit produk</DialogTitle>
             <DialogDescription>Perbarui stok, harga, atau posisi minimum sebelum notifikasi muncul.</DialogDescription>
@@ -406,7 +408,7 @@ export function InventarisView() {
       </Dialog>
 
       <Dialog open={Boolean(restockTarget)} onOpenChange={(open) => !open && setRestockTarget(null)}>
-        <DialogContent className="max-w-md rounded-[28px] p-0">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="font-heading text-2xl">Restok barang</DialogTitle>
             <DialogDescription>

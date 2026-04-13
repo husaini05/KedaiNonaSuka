@@ -29,7 +29,7 @@ export function LaporanView() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
           ))}
@@ -226,7 +226,7 @@ export function LaporanView() {
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Omzet"
           value={formatCompactCurrency(summary.revenue)}
@@ -251,7 +251,7 @@ export function LaporanView() {
         />
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
         <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
           <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

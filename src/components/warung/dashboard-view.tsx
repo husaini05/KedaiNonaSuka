@@ -13,12 +13,12 @@ export function DashboardView() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
           ))}
         </div>
-        <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="h-72 rounded-[26px] bg-white/60 border border-white/60" />
           <div className="space-y-4">
             <div className="h-36 rounded-[26px] bg-white/60 border border-white/60" />
@@ -47,7 +47,7 @@ export function DashboardView() {
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Omzet hari ini"
           value={formatCurrency(todaySales)}
@@ -72,7 +72,7 @@ export function DashboardView() {
         />
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
         <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
           <CardHeader>
             <CardTitle className="font-heading text-2xl">Aktivitas terbaru</CardTitle>
