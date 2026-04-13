@@ -2,32 +2,40 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { KeyRound, ShieldCheck, Store } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 type AuthMode = "signin" | "signup";
 
+const FEATURES = [
+  { emoji: "🛒", title: "Kasir cepat & mudah", desc: "Transaksi selesai dalam hitungan detik" },
+  { emoji: "📦", title: "Stok real-time", desc: "Pantau barang sebelum kehabisan" },
+  { emoji: "📊", title: "Laporan otomatis", desc: "Lihat untung rugi tanpa hitung manual" },
+  { emoji: "💳", title: "Catat kasbon", desc: "Tagih pelanggan tepat waktu" },
+];
+
+const FOOD_EMOJIS = ["🍽️", "🥘", "🍜", "🥤", "🍚", "🥗", "🍱", "☕", "🧋", "🍛", "🥩", "🫕"];
+
 export function AuthScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, isPending: isSessionPending } = useSession();
+
   const queryMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
   const authError = searchParams.get("error");
+
   const [mode, setMode] = useState<AuthMode>(queryMode);
-  const [signInForm, setSignInForm] = useState({
-    email: "",
-    password: "",
-  });
-  const [signUpForm, setSignUpForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [signInForm, setSignInForm] = useState({ email: "", password: "" });
+  const [signUpForm, setSignUpForm] = useState({ name: "", email: "", password: "" });
+
+  const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
     if (!isSessionPending && session) {
@@ -39,215 +47,360 @@ export function AuthScreen() {
     setMode(queryMode);
   }, [queryMode]);
 
-  return (
-    <div className="min-h-screen bg-background px-4 py-6 lg:px-6">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-[1440px] gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <Card className="relative overflow-hidden border-white/60 bg-[linear-gradient(145deg,rgba(58,34,24,0.98),rgba(103,59,34,0.96))] text-white shadow-[0_32px_90px_-50px_rgba(56,31,19,0.88)]">
-          <CardContent className="flex h-full flex-col justify-between gap-10 p-8 lg:p-10">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-white/12">
-                  <Store className="size-5" />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-white/70">Warung OS</p>
-                  <p className="mt-1 text-sm text-white/80">Masuk untuk sinkronisasi warung kamu</p>
-                </div>
-              </div>
+  const isEmailNotVerified = authError === "EMAIL_NOT_VERIFIED";
 
-              <h1 className="mt-8 max-w-xl font-heading text-4xl font-semibold tracking-tight lg:text-5xl">
-                Pembukuan, kasir, stok, dan kasbon dalam satu aplikasi warung.
-              </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-white/72">
-                Better Auth sekarang terhubung ke frontend, jadi akun yang kamu buat akan langsung
-                membawa workspace warung sendiri di backend.
+  async function handleResendVerification() {
+    const email = signInForm.email;
+    if (!email) {
+      toast.error("Masukkan email kamu dulu di kolom email di atas.");
+      return;
+    }
+    setIsResending(true);
+    try {
+      const res = await fetch("/api/auth/send-verification-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, callbackURL: "/dashboard" }),
+      });
+      if (res.ok) {
+        toast.success("Email verifikasi sudah dikirim ulang!");
+      } else {
+        toast.error("Gagal mengirim ulang. Coba beberapa saat lagi.");
+      }
+    } catch {
+      toast.error("Terjadi kesalahan. Periksa koneksimu.");
+    } finally {
+      setIsResending(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#fdf6ec]">
+      <div className="mx-auto grid min-h-screen max-w-[1440px] lg:grid-cols-[1.15fr_0.85fr]">
+
+        {/* ── Panel Kiri (Hero) ── */}
+        <div className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12"
+          style={{ background: "linear-gradient(160deg, #1c0d06 0%, #2f1a0e 50%, #3d2211 100%)" }}
+        >
+          {/* Background dekorasi emoji makanan */}
+          <div className="pointer-events-none absolute inset-0 select-none overflow-hidden">
+            <div className="absolute inset-0 opacity-[0.035]">
+              <div className="grid grid-cols-6 gap-10 p-10"
+                style={{ transform: "rotate(-8deg) scale(1.3)", transformOrigin: "center" }}>
+                {Array.from({ length: 72 }).map((_, i) => (
+                  <span key={i} className="text-5xl">
+                    {FOOD_EMOJIS[i % FOOD_EMOJIS.length]}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {/* Gradient overlay */}
+            <div className="absolute inset-0"
+              style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(232,130,26,0.12) 0%, transparent 65%)" }}
+            />
+          </div>
+
+          {/* Logo + Heading */}
+          <div className="relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="flex size-12 items-center justify-center rounded-2xl text-2xl"
+                style={{ background: "rgba(232,130,26,0.18)", border: "1px solid rgba(232,130,26,0.3)" }}>
+                🍽️
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em]"
+                  style={{ color: "rgba(232,130,26,0.85)" }}>
+                  Kedai Nona Suka
+                </p>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  Sistem Kasir & Operasional
+                </p>
+              </div>
+            </div>
+
+            <h1 className="mt-12 font-heading text-[2.8rem] font-semibold leading-[1.15] tracking-tight text-white">
+              Kelola warung<br />lebih mudah,<br />
+              <span style={{ color: "#E8821A" }}>lebih menguntungkan.</span>
+            </h1>
+
+            <p className="mt-6 max-w-sm text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+              Makan enak, kantong aman. Satu platform untuk kasir, stok, laporan, dan kasbon warungmu — dari HP atau laptop.
+            </p>
+          </div>
+
+          {/* Feature cards */}
+          <div className="relative z-10 grid grid-cols-2 gap-3">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-[20px] p-4"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="text-2xl">{f.emoji}</span>
+                <p className="mt-2 text-sm font-semibold text-white">{f.title}</p>
+                <p className="mt-0.5 text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="relative z-10 flex items-center gap-2 text-xs"
+            style={{ color: "rgba(255,255,255,0.3)" }}>
+            <span>© 2025 Kedai Nona Suka</span>
+            <span>•</span>
+            <span>Makan enak, kantong aman</span>
+          </div>
+        </div>
+
+        {/* ── Panel Kanan (Form) ── */}
+        <div className="flex min-h-screen flex-col items-center justify-center px-6 py-10 lg:px-10">
+          {/* Logo mobile */}
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-2xl shadow-[0_8px_24px_-8px_rgba(232,130,26,0.5)]">
+              🍽️
+            </div>
+            <div>
+              <p className="font-heading text-lg font-semibold">Kedai Nona Suka</p>
+              <p className="text-xs text-muted-foreground">Makan enak, kantong aman</p>
+            </div>
+          </div>
+
+          <div className="w-full max-w-sm">
+            {/* Greeting */}
+            <div className="mb-7">
+              <h2 className="font-heading text-[1.8rem] font-semibold leading-tight">
+                {mode === "signin" ? "Selamat datang! 👋" : "Daftar akun baru 🚀"}
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {mode === "signin"
+                  ? "Masuk untuk lanjut kelola warungmu."
+                  : "Gratis selamanya. Tidak perlu kartu kredit."}
               </p>
             </div>
 
-            <div className="grid gap-4">
-              <div className="rounded-[24px] border border-white/10 bg-white/6 p-5">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="size-5 text-[#ffbd7b]" />
-                  <p className="font-medium">Session aman dan konsisten</p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-white/72">
-                  Login dan logout sekarang langsung memakai Better Auth client dan route auth di backend.
-                </p>
-              </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/6 p-5">
-                <div className="flex items-center gap-3">
-                  <KeyRound className="size-5 text-[#ffbd7b]" />
-                  <p className="font-medium">Data langsung tersambung ke API</p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-white/72">
-                  Setelah login, bootstrap state frontend otomatis memuat workspace user dari API yang sama.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-          <CardHeader className="pb-2">
-            <CardTitle className="font-heading text-3xl">Akses akun</CardTitle>
-            <CardDescription>
-              Masuk untuk membuka workspace warung sendiri, atau buat akun baru untuk mulai mencatat transaksi.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="inline-flex rounded-full bg-muted p-1">
-              <button
-                type="button"
-                className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                  mode === "signin"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setMode("signin")}
-              >
-                Masuk
-              </button>
-              <button
-                type="button"
-                className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                  mode === "signup"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setMode("signup")}
-              >
-                Daftar
-              </button>
+            {/* Mode tabs */}
+            <div className="mb-6 flex w-full rounded-2xl bg-muted p-1">
+              {(["signin", "signup"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={cn(
+                    "flex-1 rounded-xl py-2.5 text-sm font-medium transition-all",
+                    mode === m
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => setMode(m)}
+                >
+                  {m === "signin" ? "Masuk" : "Daftar"}
+                </button>
+              ))}
             </div>
 
-            {authError ? (
-              <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-                {authError}
+            {/* Error */}
+            {authError && (
+              <div className="mb-5 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm">
+                {isEmailNotVerified ? (
+                  <div className="space-y-2">
+                    <p className="font-semibold text-destructive">Email belum diverifikasi ✉️</p>
+                    <p className="text-muted-foreground">
+                      Cek inbox atau folder spam kamu. Link verifikasi sudah dikirim saat pendaftaran.
+                    </p>
+                    <button
+                      type="button"
+                      disabled={isResending}
+                      className="mt-1 font-medium text-primary underline underline-offset-2 hover:opacity-80 disabled:opacity-50"
+                      onClick={() => void handleResendVerification()}
+                    >
+                      {isResending ? "Mengirim..." : "Kirim ulang email verifikasi →"}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-destructive">{authError}</p>
+                )}
               </div>
-            ) : null}
+            )}
 
+            {/* ── Form Masuk ── */}
             {mode === "signin" ? (
               <>
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    name="email"
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signin-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signin-email"
+                        name="email"
+                        form="signin-form"
+                        type="email"
+                        value={signInForm.email}
+                        onChange={(e) => setSignInForm((c) => ({ ...c, email: e.target.value }))}
+                        autoComplete="email"
+                        className="h-12 rounded-2xl bg-white pl-10"
+                        placeholder="warung@email.com"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signin-password">Kata sandi</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signin-password"
+                        name="password"
+                        form="signin-form"
+                        type={showPassword ? "text" : "password"}
+                        value={signInForm.password}
+                        onChange={(e) => setSignInForm((c) => ({ ...c, password: e.target.value }))}
+                        autoComplete="current-password"
+                        className="h-12 rounded-2xl bg-white pl-10 pr-11"
+                        placeholder="Kata sandi kamu"
+                        required
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? "Sembunyikan" : "Tampilkan"}
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
                     form="signin-form"
-                    type="email"
-                    value={signInForm.email}
-                    onChange={(event) =>
-                      setSignInForm((current) => ({ ...current, email: event.target.value }))
-                    }
-                    autoComplete="email"
-                    className="h-12 rounded-2xl bg-white/80"
-                    placeholder="warung@email.com"
-                    required
-                  />
+                    size="lg"
+                    className="h-12 w-full rounded-2xl bg-gradient-to-br from-primary to-[#c8681a] font-semibold text-white shadow-[0_8px_24px_-8px_rgba(232,130,26,0.55)] transition-all hover:scale-[1.01] hover:shadow-[0_12px_28px_-8px_rgba(232,130,26,0.65)]"
+                  >
+                    Masuk ke Dashboard →
+                  </Button>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="signin-password">Kata sandi</Label>
-                  <Input
-                    id="signin-password"
-                    name="password"
-                    form="signin-form"
-                    type="password"
-                    value={signInForm.password}
-                    onChange={(event) =>
-                      setSignInForm((current) => ({ ...current, password: event.target.value }))
-                    }
-                    autoComplete="current-password"
-                    className="h-12 rounded-2xl bg-white/80"
-                    placeholder="Minimal 8 karakter"
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  form="signin-form"
-                  size="lg"
-                  className="h-12 w-full rounded-2xl"
-                >
-                  Masuk ke dashboard
-                </Button>
-              </div>
-              <form id="signin-form" action="/api/session/sign-in" method="post">
-                <input type="hidden" name="callbackURL" value="/dashboard" />
-              </form>
+
+                <form id="signin-form" action="/api/session/sign-in" method="post" className="hidden">
+                  <input type="hidden" name="callbackURL" value="/dashboard" />
+                </form>
+
+                <p className="mt-5 text-center text-sm text-muted-foreground">
+                  Belum punya akun?{" "}
+                  <button
+                    type="button"
+                    className="font-semibold text-primary hover:underline"
+                    onClick={() => setMode("signup")}
+                  >
+                    Daftar gratis
+                  </button>
+                </p>
               </>
             ) : (
+              /* ── Form Daftar ── */
               <>
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-name">Nama pemilik</Label>
-                  <Input
-                    id="signup-name"
-                    name="name"
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-name">Nama pemilik warung</Label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-name"
+                        name="name"
+                        form="signup-form"
+                        value={signUpForm.name}
+                        onChange={(e) => setSignUpForm((c) => ({ ...c, name: e.target.value }))}
+                        autoComplete="name"
+                        className="h-12 rounded-2xl bg-white pl-10"
+                        placeholder="Contoh: Ibu Nona"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-email"
+                        name="email"
+                        form="signup-form"
+                        type="email"
+                        value={signUpForm.email}
+                        onChange={(e) => setSignUpForm((c) => ({ ...c, email: e.target.value }))}
+                        autoComplete="email"
+                        className="h-12 rounded-2xl bg-white pl-10"
+                        placeholder="warung@email.com"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-password">Kata sandi</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-password"
+                        name="password"
+                        form="signup-form"
+                        type={showPassword ? "text" : "password"}
+                        value={signUpForm.password}
+                        onChange={(e) => setSignUpForm((c) => ({ ...c, password: e.target.value }))}
+                        autoComplete="new-password"
+                        className="h-12 rounded-2xl bg-white pl-10 pr-11"
+                        placeholder="Minimal 8 karakter"
+                        minLength={8}
+                        required
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? "Sembunyikan" : "Tampilkan"}
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
                     form="signup-form"
-                    value={signUpForm.name}
-                    onChange={(event) =>
-                      setSignUpForm((current) => ({ ...current, name: event.target.value }))
-                    }
-                    autoComplete="name"
-                    className="h-12 rounded-2xl bg-white/80"
-                    placeholder="Ibu Sari"
-                    required
-                  />
+                    size="lg"
+                    className="h-12 w-full rounded-2xl bg-gradient-to-br from-primary to-[#c8681a] font-semibold text-white shadow-[0_8px_24px_-8px_rgba(232,130,26,0.55)] transition-all hover:scale-[1.01] hover:shadow-[0_12px_28px_-8px_rgba(232,130,26,0.65)]"
+                  >
+                    Buat Akun Gratis 🚀
+                  </Button>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    name="email"
-                    form="signup-form"
-                    type="email"
-                    value={signUpForm.email}
-                    onChange={(event) =>
-                      setSignUpForm((current) => ({ ...current, email: event.target.value }))
-                    }
-                    autoComplete="email"
-                    className="h-12 rounded-2xl bg-white/80"
-                    placeholder="warung@email.com"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-password">Kata sandi</Label>
-                  <Input
-                    id="signup-password"
-                    name="password"
-                    form="signup-form"
-                    type="password"
-                    value={signUpForm.password}
-                    onChange={(event) =>
-                      setSignUpForm((current) => ({ ...current, password: event.target.value }))
-                    }
-                    autoComplete="new-password"
-                    className="h-12 rounded-2xl bg-white/80"
-                    placeholder="Minimal 8 karakter"
-                    minLength={8}
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  form="signup-form"
-                  size="lg"
-                  className="h-12 w-full rounded-2xl"
-                >
-                  Buat akun baru
-                </Button>
-              </div>
-              <form id="signup-form" action="/api/session/sign-up" method="post">
-                <input type="hidden" name="callbackURL" value="/dashboard" />
-              </form>
+
+                <form id="signup-form" action="/api/session/sign-up" method="post" className="hidden">
+                  <input type="hidden" name="callbackURL" value="/dashboard" />
+                </form>
+
+                <p className="mt-4 text-center text-xs text-muted-foreground">
+                  Setelah daftar, kamu akan mendapat email verifikasi. Akun aktif setelah dikonfirmasi.
+                </p>
+                <p className="mt-3 text-center text-sm text-muted-foreground">
+                  Sudah punya akun?{" "}
+                  <button
+                    type="button"
+                    className="font-semibold text-primary hover:underline"
+                    onClick={() => setMode("signin")}
+                  >
+                    Masuk sekarang
+                  </button>
+                </p>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

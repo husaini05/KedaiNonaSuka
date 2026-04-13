@@ -79,5 +79,20 @@ export const auth = betterAuth({
   trustedOrigins: async (request) => getTrustedAuthOrigins(request),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }: { user: { email: string }; url: string }) => {
+      // Log URL ke konsol — tampil di Vercel Function Logs
+      console.log(`[Kedai Nona Suka] Link verifikasi untuk ${user.email}:`);
+      console.log(url);
+      // TODO: Pasang Resend untuk kirim email sungguhan:
+      // import { Resend } from "resend";
+      // const resend = new Resend(process.env.RESEND_API_KEY);
+      // await resend.emails.send({ from: "noreply@kedainonasuka.com", to: user.email, subject: "Verifikasi Email", html: `<a href="${url}">Klik di sini untuk verifikasi</a>` });
+    },
   },
 });

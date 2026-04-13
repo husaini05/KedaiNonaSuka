@@ -92,11 +92,25 @@ export async function POST(
       | null;
 
     if (!authResponse.ok) {
-      return redirectToAuth(
-        request,
-        config.mode,
-        authResult?.message ?? config.defaultError
-      );
+      // Terjemahkan error EMAIL_NOT_VERIFIED ke pesan Indonesia
+      const rawMessage = authResult?.message ?? config.defaultError;
+      const isNotVerified =
+        rawMessage.toLowerCase().includes("email") &&
+        (rawMessage.toLowerCase().includes("verif") || rawMessage.toLowerCase().includes("not verified"));
+      const errorMessage = isNotVerified
+        ? "EMAIL_NOT_VERIFIED"
+        : rawMessage;
+      return redirectToAuth(request, config.mode, errorMessage);
+    }
+
+    // Setelah daftar: arahkan ke halaman tunggu verifikasi email
+    if (intent === "sign-up") {
+      const email = String(formData.get("email") ?? "");
+      const verifyUrl = new URL("/auth/verify-pending", request.url);
+      if (email) verifyUrl.searchParams.set("email", email);
+      const response = NextResponse.redirect(verifyUrl, { status: 303 });
+      appendSetCookieHeaders(authResponse, response);
+      return response;
     }
 
     const redirectTarget = new URL(authResult?.url ?? callbackURL, request.url);
