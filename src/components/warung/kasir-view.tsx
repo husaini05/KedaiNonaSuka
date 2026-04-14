@@ -142,6 +142,126 @@ function ProductCard({ product, onAdd, isAnimating = false }: { product: Product
   );
 }
 
+// ─── Payment Section ──────────────────────────────────────────────────────────
+
+type PaymentSectionProps = {
+  enabledPayments: PaymentMethod[];
+  paymentMethod: PaymentMethod;
+  setPaymentMethod: (method: PaymentMethod) => void;
+  showCashInput: boolean;
+  cashReceived: string;
+  setCashReceived: (value: string) => void;
+  cashReceivedNum: number;
+  change: number;
+  cartTotal: number;
+};
+
+function PaymentSection({
+  enabledPayments,
+  paymentMethod,
+  setPaymentMethod,
+  showCashInput,
+  cashReceived,
+  setCashReceived,
+  cashReceivedNum,
+  change,
+  cartTotal,
+}: PaymentSectionProps) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Metode pembayaran
+      </p>
+
+      {/* Payment method cards */}
+      <div className="grid grid-cols-3 gap-2">
+        {enabledPayments.map((method) => {
+          const active = paymentMethod === method;
+          return (
+            <button
+              key={method}
+              type="button"
+              onClick={() => setPaymentMethod(method)}
+              className={cn(
+                "flex flex-col items-center gap-1.5 rounded-2xl border-2 py-3 px-2 transition-all duration-150 active:scale-95",
+                active
+                  ? "border-primary bg-primary/8 text-primary"
+                  : "border-border bg-white text-muted-foreground hover:border-primary/40"
+              )}
+            >
+              {method === "Tunai" ? (
+                <BanknoteArrowDown className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
+              ) : (
+                <CreditCard className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
+              )}
+              <span className="text-xs font-semibold">{method}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Cash input */}
+      {showCashInput && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-muted-foreground">Uang diterima</span>
+            {cashReceivedNum > 0 && change >= 0 && (
+              <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
+                Kembalian {formatCurrency(change)}
+              </span>
+            )}
+            {cashReceivedNum > 0 && change < 0 && (
+              <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-xs font-bold text-destructive">
+                Kurang {formatCurrency(-change)}
+              </span>
+            )}
+          </div>
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+              Rp
+            </span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={cashReceived}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, "");
+                setCashReceived(v ? parseInt(v).toLocaleString("id-ID") : "");
+              }}
+              placeholder="0"
+              className="h-12 rounded-2xl pl-10 text-lg font-bold"
+              autoComplete="off"
+            />
+          </div>
+          {/* Quick cash amount buttons */}
+          {cartTotal > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {getQuickAmounts(cartTotal).map((amount) => (
+                <button
+                  key={amount}
+                  type="button"
+                  onClick={() => setCashReceived(amount.toLocaleString("id-ID"))}
+                  className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground transition-all active:scale-95 hover:bg-primary/10 hover:text-primary"
+                >
+                  Rp {(amount / 1000).toFixed(0)}rb
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCashReceived(cartTotal.toLocaleString("id-ID"))}
+                className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-all active:scale-95 hover:bg-primary/20"
+              >
+                Pas
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function KasirSkeleton() {
@@ -395,104 +515,6 @@ export function KasirView() {
     );
   }
 
-  // ── Payment section ──────────────────────────────────────────────────────────
-
-  function PaymentSection({ compact = false }: { compact?: boolean }) {
-    return (
-      <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Metode pembayaran
-        </p>
-
-        {/* Payment method cards */}
-        <div className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-3")}>
-          {settings.enabledPayments.map((method) => {
-            const active = paymentMethod === method;
-            return (
-              <button
-                key={method}
-                type="button"
-                onClick={() => setPaymentMethod(method)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-2xl border-2 py-3 px-2 transition-all duration-150 active:scale-95",
-                  active
-                    ? "border-primary bg-primary/8 text-primary"
-                    : "border-border bg-white text-muted-foreground hover:border-primary/40"
-                )}
-              >
-                {method === "Tunai" ? (
-                  <BanknoteArrowDown className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
-                ) : (
-                  <CreditCard className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
-                )}
-                <span className="text-xs font-semibold">{method}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Cash input */}
-        {showCashInput && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-muted-foreground">Uang diterima</span>
-              {cashReceivedNum > 0 && change >= 0 && (
-                <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
-                  Kembalian {formatCurrency(change)}
-                </span>
-              )}
-              {cashReceivedNum > 0 && change < 0 && (
-                <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-xs font-bold text-destructive">
-                  Kurang {formatCurrency(-change)}
-                </span>
-              )}
-            </div>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                Rp
-              </span>
-              <Input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={cashReceived}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, "");
-                  setCashReceived(v ? parseInt(v).toLocaleString("id-ID") : "");
-                }}
-                placeholder="0"
-                className="h-12 rounded-2xl pl-10 text-lg font-bold"
-                autoComplete="off"
-              />
-            </div>
-            {/* Quick cash amount buttons */}
-            {cartTotal > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-0.5">
-                {getQuickAmounts(cartTotal).map((amount) => (
-                  <button
-                    key={amount}
-                    type="button"
-                    onClick={() => setCashReceived(amount.toLocaleString("id-ID"))}
-                    className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground transition-all active:scale-95 hover:bg-primary/10 hover:text-primary"
-                  >
-                    Rp {(amount / 1000).toFixed(0)}rb
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setCashReceived(cartTotal.toLocaleString("id-ID"))}
-                  className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-all active:scale-95 hover:bg-primary/20"
-                >
-                  Pas
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
-
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -540,7 +562,17 @@ export function KasirView() {
 
             {/* Payment + checkout */}
             <div className="space-y-4 border-t border-border/60 bg-white px-5 py-4">
-              <PaymentSection compact />
+              <PaymentSection
+                enabledPayments={settings.enabledPayments}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+                showCashInput={showCashInput}
+                cashReceived={cashReceived}
+                setCashReceived={setCashReceived}
+                cashReceivedNum={cashReceivedNum}
+                change={change}
+                cartTotal={cartTotal}
+              />
 
               {/* Total + CTA */}
               <div className="rounded-2xl bg-primary px-5 py-4 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.5)]">
@@ -791,7 +823,17 @@ export function KasirView() {
 
             {/* Payment + total */}
             <div className="border-t border-border/60 space-y-4 p-5">
-              <PaymentSection />
+              <PaymentSection
+                enabledPayments={settings.enabledPayments}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+                showCashInput={showCashInput}
+                cashReceived={cashReceived}
+                setCashReceived={setCashReceived}
+                cashReceivedNum={cashReceivedNum}
+                change={change}
+                cartTotal={cartTotal}
+              />
 
               {/* Total block */}
               <div className="rounded-2xl bg-primary px-5 py-4 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.4)]">
