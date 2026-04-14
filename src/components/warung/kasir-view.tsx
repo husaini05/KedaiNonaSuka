@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   BanknoteArrowDown,
+  CheckCircle2,
   ChevronUp,
   CreditCard,
   Minus,
@@ -18,9 +19,7 @@ import {
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -55,6 +54,14 @@ const categoryEmoji: Record<string, string> = {
   "Kebutuhan Harian": "✨",
 };
 
+const categoryBg: Record<string, string> = {
+  Makanan: "bg-orange-50",
+  "Jus Segar": "bg-green-50",
+  Minuman: "bg-blue-50",
+  Sembako: "bg-yellow-50",
+  "Kebutuhan Harian": "bg-purple-50",
+};
+
 function vibrate(ms = 30) {
   if (typeof window !== "undefined" && "vibrate" in navigator) {
     navigator.vibrate(ms);
@@ -64,8 +71,10 @@ function vibrate(ms = 30) {
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
 function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
-  const lowStock = product.stock <= product.minimumStock;
+  const lowStock = product.stock <= product.minimumStock && product.stock > 0;
   const outOfStock = product.stock <= 0;
+  const emoji = categoryEmoji[product.category] ?? "🏪";
+  const bg = categoryBg[product.category] ?? "bg-gray-50";
 
   return (
     <button
@@ -73,44 +82,49 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
       onClick={onAdd}
       disabled={outOfStock}
       className={cn(
-        "group relative flex flex-col rounded-[20px] border bg-white p-3.5 text-left",
-        "shadow-sm transition-all duration-200 active:scale-[0.96]",
-        "hover:border-primary/40 hover:shadow-md",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        lowStock && !outOfStock ? "border-amber-200 bg-amber-50/70" : "border-border/60"
+        "group relative flex flex-col rounded-2xl bg-white p-3.5 text-left shadow-sm",
+        "transition-all duration-150 active:scale-[0.94] active:shadow-none select-none",
+        outOfStock
+          ? "cursor-not-allowed opacity-50"
+          : "hover:shadow-md hover:ring-1 hover:ring-primary/30 active:ring-1 active:ring-primary/50",
+        lowStock && "ring-1 ring-amber-200"
       )}
     >
-      {/* Category */}
-      <div className="flex items-center gap-1">
-        <span className="text-sm leading-none">{categoryEmoji[product.category] ?? "🏪"}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60 truncate">
-          {product.category}
-        </span>
+      {/* Emoji circle */}
+      <div
+        className={cn(
+          "flex size-12 items-center justify-center rounded-2xl text-2xl mb-2.5",
+          outOfStock ? "bg-muted" : bg
+        )}
+      >
+        {emoji}
       </div>
 
       {/* Name */}
-      <p className="mt-1.5 text-[14px] font-semibold leading-snug line-clamp-2 text-foreground">
+      <p className="text-[13px] font-semibold leading-snug line-clamp-2 text-foreground flex-1 min-h-[2.4rem]">
         {product.name}
       </p>
 
-      {/* Stock warning */}
-      {lowStock && !outOfStock && (
-        <p className="mt-1 text-[11px] font-medium text-amber-600">
+      {/* Stock badge */}
+      {lowStock && (
+        <p className="mt-1.5 self-start rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
           Sisa {product.stock}
         </p>
       )}
       {outOfStock && (
-        <p className="mt-1 text-[11px] font-medium text-destructive">Stok habis</p>
+        <p className="mt-1.5 self-start rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">
+          Habis
+        </p>
       )}
 
       {/* Price + Add button */}
-      <div className="mt-2 flex items-center justify-between">
-        <p className="font-heading text-[16px] font-bold text-primary leading-none">
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <p className="font-heading text-[15px] font-bold text-primary leading-none">
           {formatCurrency(product.sellPrice)}
         </p>
         {!outOfStock && (
-          <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-150 group-hover:scale-110 group-hover:bg-primary group-hover:text-white group-active:scale-95">
-            <Plus className="size-3.5" aria-hidden="true" />
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_12px_-4px_rgba(232,130,26,0.5)] transition-all duration-150 group-active:scale-90 group-hover:shadow-[0_8px_16px_-4px_rgba(232,130,26,0.45)]">
+            <Plus className="size-4" />
           </div>
         )}
       </div>
@@ -123,15 +137,15 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 function KasirSkeleton() {
   return (
     <div className="animate-pulse space-y-4">
-      <div className="h-11 rounded-2xl bg-white/60 border border-white/60" />
-      <div className="flex gap-2">
+      <div className="h-11 rounded-2xl bg-white shadow-sm" />
+      <div className="flex gap-2 overflow-hidden">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-9 w-20 shrink-0 rounded-full bg-white/60" />
+          <div key={i} className="h-9 w-20 shrink-0 rounded-full bg-white shadow-sm" />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-32 rounded-[20px] bg-white/60 border border-white/60" />
+          <div key={i} className="h-36 rounded-2xl bg-white shadow-sm" />
         ))}
       </div>
     </div>
@@ -170,14 +184,11 @@ export function KasirView() {
   const showCashInput = paymentMethod === "Tunai";
   const totalQty = cartLines.reduce((s, l) => s + l.quantity, 0);
 
-  // Auto-close cart sheet when cart is emptied
   useEffect(() => {
     if (cartLines.length === 0) setCartSheetOpen(false);
   }, [cartLines.length]);
 
   if (isLoading) return <KasirSkeleton />;
-
-  // ── Helpers ─────────────────────────────────────────────────────────────────
 
   const filteredProducts = products.filter((p) => {
     const q = query.toLowerCase();
@@ -265,8 +276,8 @@ export function KasirView() {
       const transaction = await checkout();
       if (!transaction) { toast.error("Keranjang masih kosong."); return; }
 
-      vibrate(60);
-      toast.success("Transaksi berhasil disimpan.", {
+      vibrate(80);
+      toast.success("Transaksi berhasil!", {
         description: `${transaction.items.length} produk · ${paymentLabels[transaction.paymentMethod]}`,
       });
 
@@ -283,7 +294,6 @@ export function KasirView() {
       setCheckoutSuccessOpen(true);
       setConfirmOpen(false);
 
-      // Warn about low stock after checkout
       const lowItems = transaction.items.reduce<Product[]>((acc, item) => {
         const p = products.find((c) => c.id === item.productId);
         if (p && p.stock - item.quantity <= p.minimumStock) acc.push(p);
@@ -299,50 +309,58 @@ export function KasirView() {
     }
   }
 
-  // ── Cart content (shared between sheet and desktop card) ─────────────────────
+  // ── Cart items ───────────────────────────────────────────────────────────────
 
   function CartItemsList() {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {cartLines.map((line) => (
           <div
             key={line.product.id}
-            className="flex items-center gap-3 rounded-[16px] border border-border/60 bg-white px-3.5 py-3"
+            className="flex items-center gap-3 rounded-2xl bg-muted/40 px-3 py-2.5"
           >
-            {/* Product info */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{line.product.name}</p>
-              <p className="text-xs text-muted-foreground">{formatCurrency(line.product.sellPrice)} / pcs</p>
+            {/* Emoji avatar */}
+            <div className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-xl text-lg",
+              categoryBg[line.product.category] ?? "bg-gray-50"
+            )}>
+              {categoryEmoji[line.product.category] ?? "🏪"}
             </div>
 
-            {/* Qty controls */}
-            <div className="flex items-center gap-1.5 rounded-full bg-muted px-1.5 py-1">
+            {/* Product info */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold leading-tight">{line.product.name}</p>
+              <p className="text-xs text-muted-foreground">{formatCurrency(line.product.sellPrice)}</p>
+            </div>
+
+            {/* Qty stepper */}
+            <div className="flex items-center gap-1 rounded-full bg-white px-1 py-0.5 shadow-sm">
               <button
                 type="button"
                 onClick={() => updateCartQuantity(line.product.id, line.quantity - 1)}
-                className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-background hover:text-foreground active:scale-90"
+                className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90"
                 aria-label="Kurangi"
               >
-                <Minus className="size-3.5" />
+                <Minus className="size-3" />
               </button>
               <span className="min-w-[1.5rem] text-center text-sm font-bold">{line.quantity}</span>
               <button
                 type="button"
                 onClick={() => updateCartQuantity(line.product.id, line.quantity + 1)}
-                className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-background hover:text-foreground active:scale-90"
+                className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90"
                 aria-label="Tambah"
               >
-                <Plus className="size-3.5" />
+                <Plus className="size-3" />
               </button>
             </div>
 
             {/* Line total + remove */}
-            <div className="flex items-center gap-2 shrink-0">
-              <p className="text-sm font-bold">{formatCurrency(line.lineTotal)}</p>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <p className="text-sm font-bold text-foreground">{formatCurrency(line.lineTotal)}</p>
               <button
                 type="button"
                 onClick={() => removeFromCart(line.product.id)}
-                className="flex size-6 items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted hover:text-foreground"
+                className="flex size-5 items-center justify-center rounded-full text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
                 aria-label={`Hapus ${line.product.name}`}
               >
                 <X className="size-3" />
@@ -354,41 +372,62 @@ export function KasirView() {
     );
   }
 
+  // ── Payment section ──────────────────────────────────────────────────────────
+
   function PaymentSection({ compact = false }: { compact?: boolean }) {
     return (
       <div className="space-y-3">
-        <p className="text-sm font-semibold text-muted-foreground">Metode pembayaran</p>
-        <div className={cn("grid gap-2", compact ? "grid-cols-3" : "sm:grid-cols-3")}>
-          {settings.enabledPayments.map((method) => (
-            <Button
-              key={method}
-              type="button"
-              variant={paymentMethod === method ? "default" : "outline"}
-              className={cn(
-                "h-11 rounded-2xl text-sm",
-                paymentMethod === method && "shadow-[0_12px_28px_-14px_rgba(186,92,35,0.7)]"
-              )}
-              onClick={() => setPaymentMethod(method)}
-            >
-              {method === "Tunai" ? <BanknoteArrowDown className="size-4" /> : <CreditCard className="size-4" />}
-              {paymentLabels[method]}
-            </Button>
-          ))}
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Metode pembayaran
+        </p>
+
+        {/* Payment method cards */}
+        <div className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-3")}>
+          {settings.enabledPayments.map((method) => {
+            const active = paymentMethod === method;
+            return (
+              <button
+                key={method}
+                type="button"
+                onClick={() => setPaymentMethod(method)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 rounded-2xl border-2 py-3 px-2 transition-all duration-150 active:scale-95",
+                  active
+                    ? "border-primary bg-primary/8 text-primary"
+                    : "border-border bg-white text-muted-foreground hover:border-primary/40"
+                )}
+              >
+                {method === "Tunai" ? (
+                  <BanknoteArrowDown className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
+                ) : (
+                  <CreditCard className={cn("size-5", active ? "text-primary" : "text-muted-foreground")} />
+                )}
+                <span className="text-xs font-semibold">{method}</span>
+              </button>
+            );
+          })}
         </div>
 
+        {/* Cash input */}
         {showCashInput && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium text-muted-foreground">Uang diterima</span>
               {cashReceivedNum > 0 && change >= 0 && (
-                <span className="font-semibold text-green-600">Kembalian: {formatCurrency(change)}</span>
+                <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
+                  Kembalian {formatCurrency(change)}
+                </span>
               )}
               {cashReceivedNum > 0 && change < 0 && (
-                <span className="font-semibold text-destructive">Kurang: {formatCurrency(-change)}</span>
+                <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-xs font-bold text-destructive">
+                  Kurang {formatCurrency(-change)}
+                </span>
               )}
             </div>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">Rp</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+                Rp
+              </span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -399,7 +438,7 @@ export function KasirView() {
                   setCashReceived(v ? parseInt(v).toLocaleString("id-ID") : "");
                 }}
                 placeholder="0"
-                className="h-12 rounded-2xl pl-10 text-lg font-semibold"
+                className="h-12 rounded-2xl pl-10 text-lg font-bold"
                 autoComplete="off"
               />
             </div>
@@ -413,59 +452,72 @@ export function KasirView() {
 
   return (
     <>
-      {/* ── Mobile cart bottom sheet (controlled) ─────────────────────────── */}
+      {/* ── Mobile cart bottom sheet ──────────────────────────────────────── */}
       <Sheet open={cartSheetOpen} onOpenChange={setCartSheetOpen}>
         <SheetContent
           side="bottom"
           showCloseButton={false}
           className="rounded-t-[28px] px-0 pb-0"
-          style={{ maxHeight: "88vh" }}
+          style={{ maxHeight: "90vh" }}
         >
-          <SheetHeader className="border-b border-border/60 px-5 pb-4 pt-2">
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-border" />
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="h-1 w-10 rounded-full bg-border" />
+          </div>
+
+          <SheetHeader className="border-b border-border/60 px-5 pb-4 pt-1">
             <div className="flex items-center justify-between">
-              <SheetTitle className="font-heading text-xl">Keranjang aktif</SheetTitle>
-              <Badge className="rounded-full bg-foreground text-background">{totalQty} item</Badge>
+              <SheetTitle className="font-heading text-xl">Keranjang</SheetTitle>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-white">
+                  {totalQty} item
+                </span>
+              </div>
             </div>
             <SheetDescription className="sr-only">
               Daftar item yang akan dipesan beserta total dan metode pembayaran.
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex flex-col" style={{ maxHeight: "calc(88vh - 80px)" }}>
+          <div className="flex flex-col" style={{ maxHeight: "calc(90vh - 90px)" }}>
             {/* Cart items — scrollable */}
             <ScrollArea className="flex-1 px-5 py-4">
               {cartLines.length > 0 ? (
                 <CartItemsList />
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <ReceiptText className="size-10 text-muted-foreground/40" />
-                  <p className="mt-3 text-sm text-muted-foreground">Keranjang kosong</p>
+                  <ShoppingBasket className="size-10 text-muted-foreground/30" />
+                  <p className="mt-3 text-sm font-medium text-muted-foreground">Keranjang masih kosong</p>
+                  <p className="mt-1 text-xs text-muted-foreground/60">Tap produk untuk menambahkan</p>
                 </div>
               )}
             </ScrollArea>
 
-            {/* Payment + checkout — fixed at bottom of sheet */}
-            <div className="border-t border-border/60 bg-white px-5 py-4 space-y-4">
+            {/* Payment + checkout */}
+            <div className="space-y-4 border-t border-border/60 bg-white px-5 py-4">
               <PaymentSection compact />
 
               {/* Total + CTA */}
-              <div className="rounded-[20px] bg-gradient-to-br from-primary to-[#c8681a] px-4 py-4 text-white shadow-[0_12px_32px_-12px_rgba(232,130,26,0.55)]">
-                <div className="flex items-center justify-between text-sm text-white/70">
-                  <span>Total tagihan</span>
-                  <span>{totalQty} item</span>
+              <div className="rounded-2xl bg-primary px-5 py-4 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.5)]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-white/70">{totalQty} item · {paymentLabels[paymentMethod]}</p>
+                    <p className="mt-0.5 font-heading text-2xl font-bold text-white">
+                      {formatCurrency(cartTotal)}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="h-12 rounded-2xl bg-white font-bold text-primary hover:bg-white/90 active:scale-[0.97] shadow-[0_4px_12px_-4px_rgba(0,0,0,0.2)]"
+                    onClick={handleCheckoutConfirm}
+                  >
+                    Bayar
+                  </Button>
                 </div>
-                <p className="mt-1 font-heading text-3xl font-bold">{formatCurrency(cartTotal)}</p>
-                <Button
-                  type="button"
-                  size="lg"
-                  className="mt-3 h-12 w-full rounded-2xl bg-white font-bold text-primary hover:bg-white/90 active:scale-[0.98]"
-                  onClick={handleCheckoutConfirm}
-                >
-                  Selesaikan Transaksi
-                </Button>
               </div>
-              {/* Safe area spacer */}
+
+              {/* Safe area */}
               <div style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }} />
             </div>
           </div>
@@ -477,21 +529,21 @@ export function KasirView() {
         <button
           type="button"
           onClick={() => setCartSheetOpen(true)}
-          className="fixed left-3 right-3 z-40 rounded-2xl bg-primary px-4 py-3 text-white shadow-[0_8px_28px_-8px_rgba(232,130,26,0.65)] transition-transform active:scale-[0.98] lg:hidden"
-          style={{ bottom: "calc(3.75rem + env(safe-area-inset-bottom, 0px))" }}
+          className="fixed left-3 right-3 z-40 rounded-2xl bg-primary px-4 py-3 text-white shadow-[0_8px_28px_-6px_rgba(232,130,26,0.6)] transition-transform active:scale-[0.98] lg:hidden"
+          style={{ bottom: "calc(3.75rem + env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <div className="relative">
                 <ShoppingBasket className="size-5" />
-                <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-primary">
+                <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-primary leading-none">
                   {totalQty}
                 </span>
               </div>
               <span className="text-sm font-semibold">Lihat keranjang</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="font-heading text-lg font-bold">{formatCurrency(cartTotal)}</span>
+              <span className="font-heading text-[17px] font-bold">{formatCurrency(cartTotal)}</span>
               <ChevronUp className="size-4 opacity-70" />
             </div>
           </div>
@@ -501,28 +553,32 @@ export function KasirView() {
       {/* ── Main layout ───────────────────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
 
-        {/* Product section */}
-        <div
-          className={cn(
-            "space-y-4",
-            // bottom padding on mobile when cart bar is visible
-            cartLines.length > 0 && "pb-20 lg:pb-0"
-          )}
-        >
-          {/* Sticky search + category filter (mobile: sticks below top bar) */}
-          <div className="sticky top-14 z-30 -mx-4 bg-background/95 px-4 pb-3 pt-2 backdrop-blur-xl lg:static lg:mx-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        {/* ── Product section ───────────────────────────────────────────── */}
+        <div className={cn("space-y-3", cartLines.length > 0 && "pb-20 lg:pb-0")}>
+
+          {/* Sticky search + category filter */}
+          <div className="sticky top-14 z-30 -mx-4 bg-background px-4 pb-3 pt-2 lg:static lg:mx-0 lg:bg-transparent lg:p-0">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari nama atau jenis menu..."
-                className="h-11 rounded-2xl border-border/70 bg-white pl-10 text-sm"
+                placeholder="Cari menu atau produk..."
+                className="h-11 rounded-2xl bg-white pl-10 shadow-sm border-border/60"
               />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted-foreground hover:text-white transition"
+                >
+                  <X className="size-3" />
+                </button>
+              )}
             </div>
 
-            {/* Horizontal scroll categories */}
+            {/* Category chips */}
             <div className="scrollbar-hide mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
               {categoryLabels.map((item) => (
                 <button
@@ -532,16 +588,23 @@ export function KasirView() {
                   className={cn(
                     "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-95",
                     category === item.value
-                      ? "bg-primary text-white shadow-[0_6px_18px_-8px_rgba(232,130,26,0.6)]"
-                      : "border border-border/60 bg-white text-muted-foreground hover:border-primary/40 hover:text-primary"
+                      ? "bg-primary text-white shadow-[0_4px_14px_-6px_rgba(232,130,26,0.65)]"
+                      : "bg-white text-muted-foreground border border-border/60 hover:border-primary/40 hover:text-primary shadow-sm"
                   )}
                 >
-                  <span>{item.emoji}</span>
+                  <span className="text-base leading-none">{item.emoji}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
+
+          {/* Product count */}
+          {query || category !== "Semua" ? (
+            <p className="text-xs text-muted-foreground px-0.5">
+              {filteredProducts.length} produk ditemukan
+            </p>
+          ) : null}
 
           {/* Product grid */}
           {filteredProducts.length > 0 ? (
@@ -553,77 +616,95 @@ export function KasirView() {
                   onAdd={() => {
                     addToCart(product.id);
                     vibrate(30);
-                    toast.success(`${product.name} ditambahkan.`, {
-                      description: `Stok ${product.stock} pcs tersedia.`,
+                    toast.success(`${product.name} ditambahkan`, {
+                      description: formatCurrency(product.sellPrice),
                     });
                   }}
                 />
               ))}
             </div>
           ) : (
-            <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[24px] border border-dashed border-border bg-white/60 px-6 text-center">
-              <PackageSearch className="size-12 text-muted-foreground/40" />
-              <p className="mt-4 font-heading text-lg font-semibold">Produk tidak ditemukan</p>
+            <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 text-center shadow-sm">
+              <PackageSearch className="size-12 text-muted-foreground/30" />
+              <p className="mt-4 font-heading text-lg font-semibold">Tidak ditemukan</p>
               <p className="mt-1.5 text-sm text-muted-foreground">
                 Coba kata kunci lain atau pilih kategori yang berbeda.
               </p>
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => { setQuery(""); setCategory("Semua"); }}
+                  className="mt-4 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary"
+                >
+                  Reset pencarian
+                </button>
+              )}
             </div>
           )}
         </div>
 
         {/* ── Desktop cart panel ─────────────────────────────────────────── */}
         <div className="hidden lg:block">
-          <Card className="sticky top-5 border-white/60 bg-white/74 shadow-[0_28px_70px_-48px_rgba(66,38,20,0.6)]">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="font-heading text-2xl">Keranjang aktif</CardTitle>
-                  <CardDescription>Tap produk untuk menambah ke sini.</CardDescription>
-                </div>
-                <Badge className="rounded-full bg-foreground text-background">{cartLines.length} item</Badge>
+          <div className="sticky top-5 rounded-2xl bg-white shadow-sm border border-border/60 overflow-hidden">
+            {/* Cart header */}
+            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
+              <div>
+                <p className="font-heading text-xl font-bold">Keranjang</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Tap produk untuk menambahkan</p>
               </div>
-            </CardHeader>
-            <CardContent id="cart-section" className="space-y-5">
-              {/* Cart items */}
-              <ScrollArea className="h-[280px] rounded-[22px] border border-border/70 bg-white/60 p-3">
-                {cartLines.length > 0 ? (
-                  <CartItemsList />
-                ) : (
-                  <div className="flex h-full min-h-[240px] flex-col items-center justify-center text-center">
-                    <ReceiptText className="size-10 text-muted-foreground/40" />
-                    <p className="mt-3 font-heading text-lg font-semibold">Belum ada item</p>
-                    <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-                      Tap produk dari kiri untuk mulai transaksi.
-                    </p>
-                  </div>
-                )}
-              </ScrollArea>
+              <span className={cn(
+                "rounded-full px-3 py-1 text-xs font-bold",
+                totalQty > 0 ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+              )}>
+                {totalQty > 0 ? `${totalQty} item` : "Kosong"}
+              </span>
+            </div>
 
+            {/* Cart items */}
+            <ScrollArea className="h-[260px] p-4">
+              {cartLines.length > 0 ? (
+                <CartItemsList />
+              ) : (
+                <div className="flex h-full min-h-[220px] flex-col items-center justify-center text-center">
+                  <div className="flex size-16 items-center justify-center rounded-2xl bg-muted/50">
+                    <ReceiptText className="size-7 text-muted-foreground/40" />
+                  </div>
+                  <p className="mt-3 font-heading text-base font-semibold text-foreground/60">Belum ada item</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Pilih produk dari panel kiri
+                  </p>
+                </div>
+              )}
+            </ScrollArea>
+
+            {/* Payment + total */}
+            <div className="border-t border-border/60 space-y-4 p-5">
               <PaymentSection />
 
-              {/* Total + CTA */}
-              <div className="rounded-[24px] bg-gradient-to-br from-primary to-[#c8681a] px-4 py-4 text-white shadow-[0_16px_40px_-14px_rgba(232,130,26,0.55)]">
-                <div className="flex items-center justify-between text-sm text-white/75">
+              {/* Total block */}
+              <div className="rounded-2xl bg-primary px-5 py-4 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.4)]">
+                <div className="flex items-center justify-between text-sm text-white/70">
                   <span>Total tagihan</span>
                   <span>{totalQty} item</span>
                 </div>
-                <p className="mt-2 font-heading text-4xl font-bold tracking-tight">
+                <p className="mt-1 font-heading text-3xl font-bold text-white tracking-tight">
                   {formatCurrency(cartTotal)}
                 </p>
                 <Button
                   type="button"
                   size="lg"
-                  className="mt-4 h-12 w-full rounded-2xl bg-white font-bold text-primary hover:bg-white/90 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.2)] transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="mt-4 h-12 w-full rounded-2xl bg-white font-bold text-primary hover:bg-white/90 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.15)] transition-all hover:scale-[1.01] active:scale-[0.99]"
                   onClick={handleCheckoutConfirm}
+                  disabled={cartLines.length === 0}
                 >
                   Selesaikan Transaksi
                 </Button>
-                <p className="mt-2 text-center text-xs text-white/60">
+                <p className="mt-2 text-center text-xs text-white/55">
                   Stok berkurang & transaksi tersimpan otomatis
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -637,24 +718,24 @@ export function KasirView() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 p-6 pt-4">
-            <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
+            <div className="rounded-2xl bg-primary/8 border border-primary/20 p-4">
               <p className="text-xs text-muted-foreground">Total tagihan</p>
-              <p className="mt-1 font-heading text-3xl font-bold">{formatCurrency(cartTotal)}</p>
-              <p className="text-xs text-muted-foreground">{totalQty} item</p>
+              <p className="mt-1 font-heading text-3xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{totalQty} item</p>
             </div>
-            <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
+            <div className="rounded-2xl bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">Metode pembayaran</p>
               <p className="mt-1 font-heading text-xl font-semibold">{paymentLabels[paymentMethod]}</p>
             </div>
             {paymentMethod === "Tunai" && cashReceivedNum > 0 && (
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
+                <div className="rounded-2xl bg-green-50 border border-green-100 p-4">
                   <p className="text-xs text-muted-foreground">Uang diterima</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-green-600">{formatCurrency(cashReceivedNum)}</p>
+                  <p className="mt-1 font-heading text-lg font-bold text-green-700">{formatCurrency(cashReceivedNum)}</p>
                 </div>
-                <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
+                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
                   <p className="text-xs text-muted-foreground">Kembalian</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-blue-600">{formatCurrency(change)}</p>
+                  <p className="mt-1 font-heading text-lg font-bold text-blue-700">{formatCurrency(change)}</p>
                 </div>
               </div>
             )}
@@ -673,34 +754,44 @@ export function KasirView() {
       {/* ── Success dialog ────────────────────────────────────────────────── */}
       <Dialog open={checkoutSuccessOpen} onOpenChange={setCheckoutSuccessOpen}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="font-heading text-2xl">Transaksi Berhasil!</DialogTitle>
-            <DialogDescription>
-              Cetak struk atau bagikan ke pelanggan via WhatsApp / aplikasi lain.
-            </DialogDescription>
-          </DialogHeader>
+          <div className="p-6 pb-0">
+            {/* Success icon */}
+            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-green-100">
+              <CheckCircle2 className="size-8 text-green-600" />
+            </div>
+            <p className="text-center font-heading text-2xl font-bold">Transaksi Berhasil!</p>
+            <p className="mt-1.5 text-center text-sm text-muted-foreground">
+              Struk siap dibagikan atau dicetak
+            </p>
+          </div>
+
           <div className="space-y-3 p-6 pt-4">
-            <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
-              <p className="text-xs text-muted-foreground">No. transaksi</p>
-              <p className="mt-1 font-heading text-lg font-semibold">{lastTransaction?.id.substring(0, 8)}</p>
+            {/* Total */}
+            <div className="rounded-2xl bg-green-50 border border-green-100 p-5 text-center">
+              <p className="text-xs text-muted-foreground">{paymentLabels[lastTransaction?.paymentMethod ?? "Tunai"]}</p>
+              <p className="mt-1 font-heading text-4xl font-bold text-green-700">
+                {formatCurrency(lastTransaction?.total ?? 0)}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                No. {lastTransaction?.id.substring(0, 8)}
+              </p>
             </div>
-            <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
-              <p className="text-xs text-muted-foreground">Total terbayar</p>
-              <p className="mt-1 font-heading text-3xl font-bold">{formatCurrency(lastTransaction?.total ?? 0)}</p>
-            </div>
+
+            {/* Cash details */}
             {lastTransaction?.paymentMethod === "Tunai" && lastCashReceived > 0 && (
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
+                <div className="rounded-2xl bg-muted/40 p-4 text-center">
                   <p className="text-xs text-muted-foreground">Diterima</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-green-600">{formatCurrency(lastCashReceived)}</p>
+                  <p className="mt-1 font-heading text-lg font-bold">{formatCurrency(lastCashReceived)}</p>
                 </div>
-                <div className="rounded-[20px] border border-border/70 bg-white/75 p-4">
+                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-center">
                   <p className="text-xs text-muted-foreground">Kembalian</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-blue-600">{formatCurrency(lastChange)}</p>
+                  <p className="mt-1 font-heading text-lg font-bold text-blue-700">{formatCurrency(lastChange)}</p>
                 </div>
               </div>
             )}
           </div>
+
           <DialogFooter className="rounded-b-[28px]" showCloseButton>
             <Button type="button" variant="outline" onClick={printDetailReceipt}>
               <Printer className="size-4" />
@@ -708,7 +799,7 @@ export function KasirView() {
             </Button>
             <Button type="button" onClick={() => void handleShareReceipt()}>
               <Share2 className="size-4" />
-              Bagikan Struk
+              Bagikan
             </Button>
           </DialogFooter>
         </DialogContent>
