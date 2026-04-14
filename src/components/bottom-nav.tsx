@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Package2, ScrollText, Settings2, ShoppingBasket, Wallet } from "lucide-react";
+import { BarChart3, LayoutDashboard, Package2, Settings2, ShoppingBasket, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/dashboard",   label: "Beranda",    icon: Gauge },
+  { href: "/dashboard",   label: "Beranda",    icon: LayoutDashboard },
   { href: "/kasir",       label: "Kasir",      icon: ShoppingBasket },
   { href: "/inventaris",  label: "Stok",       icon: Package2 },
-  { href: "/laporan",     label: "Laporan",    icon: ScrollText },
+  { href: "/laporan",     label: "Laporan",    icon: BarChart3 },
   { href: "/pengaturan",  label: "Pengaturan", icon: Settings2 },
 ];
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, PackagePlus, PencilLine, Search, Warehouse } from "lucide-react";
+import { AlertTriangle, Boxes, PackagePlus, PencilLine, Search, TrendingUp, Warehouse } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
@@ -260,12 +260,14 @@ export function InventarisView() {
           title="Total SKU"
           value={`${products.length} produk`}
           description="Produk aktif di warung."
+          icon={Boxes}
         />
         <StatCard
           title="Stok menipis"
           value={`${lowStockProducts.length} item`}
           description="Perlu segera direstok."
           tone="warn"
+          icon={AlertTriangle}
         />
         <div className="col-span-2 lg:col-span-1">
           <StatCard
@@ -273,6 +275,7 @@ export function InventarisView() {
             value={formatCurrency(totalInventoryValue)}
             description="Estimasi modal di inventaris."
             tone="accent"
+            icon={TrendingUp}
           />
         </div>
       </section>
@@ -359,11 +362,11 @@ export function InventarisView() {
 
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <div className="rounded-xl bg-muted/50 p-2.5">
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Harga jual</p>
+                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Harga jual</p>
                   <p className="text-sm font-semibold mt-0.5">{formatCurrency(product.sellPrice)}</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-2.5">
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Harga beli</p>
+                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Harga beli</p>
                   <p className="text-sm font-semibold mt-0.5">{formatCurrency(product.buyPrice)}</p>
                 </div>
               </div>

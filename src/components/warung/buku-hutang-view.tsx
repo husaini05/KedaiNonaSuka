@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, MessageSquareShare, Search, WalletCards } from "lucide-react";
+import { Bell, CheckCircle2, MessageSquareShare, Search, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
@@ -135,18 +135,21 @@ export function BukuHutangView() {
           value={formatCompactCurrency(outstandingTotal)}
           description="Total piutang yang masih perlu ditagih."
           tone="warn"
+          icon={WalletCards}
         />
         <StatCard
           title="Sudah lunas"
           value={`${paidCount} pelanggan`}
           description="Pelanggan yang sudah menyelesaikan pembayaran."
           tone="accent"
+          icon={CheckCircle2}
         />
         <div className="col-span-2 md:col-span-1">
           <StatCard
             title="Pengingat terkirim"
             value={`${reminderCount} kali`}
             description="Notifikasi WA yang sudah dipicu."
+            icon={Bell}
           />
         </div>
       </section>
@@ -277,7 +280,7 @@ export function BukuHutangView() {
               <div className="grid gap-3 grid-cols-2">
                 <div className="rounded-2xl bg-muted/50 p-3.5">
                   <p className="text-xs text-muted-foreground">Nominal</p>
-                  <p className="mt-1.5 text-lg font-semibold">{formatCurrency(debt.amount)}</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(debt.amount)}</p>
                 </div>
                 <div className="rounded-2xl bg-muted/50 p-3.5">
                   <p className="text-xs text-muted-foreground">Jatuh tempo</p>

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Gauge,
+  BarChart3,
+  BookOpen,
+  LayoutDashboard,
   Package2,
-  ScrollText,
   Settings2,
   ShoppingBasket,
   Wallet,
@@ -18,11 +19,11 @@ import { useSession } from "@/lib/auth-client";
 import { getInitials } from "@/lib/format";
 
 const navigation = [
-  { href: "/dashboard",   label: "Beranda",     icon: Gauge },
+  { href: "/dashboard",   label: "Beranda",     icon: LayoutDashboard },
   { href: "/kasir",       label: "Kasir",        icon: ShoppingBasket },
   { href: "/inventaris",  label: "Inventaris",   icon: Package2 },
-  { href: "/buku-hutang", label: "Buku Hutang",  icon: Wallet },
-  { href: "/laporan",     label: "Laporan",      icon: ScrollText },
+  { href: "/buku-hutang", label: "Buku Hutang",  icon: BookOpen },
+  { href: "/laporan",     label: "Laporan",      icon: BarChart3 },
   { href: "/pengaturan",  label: "Pengaturan",   icon: Settings2 },
 ];
 

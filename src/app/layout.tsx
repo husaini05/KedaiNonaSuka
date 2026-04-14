@@ -9,7 +9,7 @@ import "./globals.css";
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 // Heading font — Poppins: rounded, friendly, very popular in Indonesian mobile apps

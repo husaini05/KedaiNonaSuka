@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRightLeft, PackagePlus, ReceiptText, ScrollText, ShoppingBasket, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, BarChart3, PackagePlus, ReceiptText, ScrollText, ShoppingBasket, TrendingUp, WalletCards } from "lucide-react";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -102,23 +102,27 @@ export function DashboardView() {
           title="Omzet hari ini"
           value={formatCompactCurrency(todaySales)}
           description={`${todayTransactions.length} transaksi masuk hari ini`}
+          icon={TrendingUp}
         />
         <StatCard
           title="Total transaksi"
           value={`${transactions.length}`}
           description="Semua transaksi yang pernah tercatat"
           tone="accent"
+          icon={BarChart3}
         />
         <StatCard
           title="Stok menipis"
           value={`${lowStockProducts.length} item`}
           description="Mendekati batas minimum"
           tone="warn"
+          icon={AlertTriangle}
         />
         <StatCard
           title="Kasbon aktif"
           value={formatCompactCurrency(outstandingDebt)}
           description="Piutang pelanggan belum lunas"
+          icon={WalletCards}
         />
       </section>
 
@@ -140,7 +144,7 @@ export function DashboardView() {
               </div>
               {latestTransaction ? (
                 <>
-                  <p className="mt-3 font-heading text-2xl font-bold">
+                  <p className="mt-3 font-mono text-2xl font-bold">
                     {formatCurrency(latestTransaction.total)}
                   </p>
                   <p className="mt-1 text-xs text-background/55">

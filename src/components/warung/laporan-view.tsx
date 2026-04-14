@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Printer, TrendingUp } from "lucide-react";
+import { BarChart3, CreditCard, Download, Printer, Sparkles, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
@@ -134,23 +134,27 @@ export function LaporanView() {
           title="Omzet"
           value={formatCompactCurrency(summary.revenue)}
           description={`Total pemasukan ${rangeLabel.toLowerCase()}.`}
+          icon={TrendingUp}
         />
         <StatCard
           title="Laba kotor"
           value={formatCompactCurrency(summary.grossProfit)}
           description="Penjualan dikurangi modal barang."
           tone="accent"
+          icon={BarChart3}
         />
         <StatCard
           title="Pengeluaran"
           value={formatCompactCurrency(summary.expenseTotal)}
           description="Biaya operasional periode ini."
+          icon={CreditCard}
         />
         <StatCard
           title="Laba bersih"
           value={formatCompactCurrency(summary.netProfit)}
           description="Hasil akhir setelah semua potongan."
           tone="warn"
+          icon={Sparkles}
         />
       </section>
 
@@ -177,7 +181,7 @@ export function LaporanView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Tren omzet</p>
-                  <p className="mt-2 font-heading text-3xl font-semibold">{formatCurrency(summary.revenue)}</p>
+                  <p className="mt-2 font-mono text-3xl font-semibold">{formatCurrency(summary.revenue)}</p>
                 </div>
                 <div className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
                   {summary.transactionCount} transaksi
@@ -192,7 +196,7 @@ export function LaporanView() {
                     className="pointer-events-none absolute inset-x-0 border-t border-border/40"
                     style={{ bottom: `${pct}%` }}
                   >
-                    <span className="absolute -top-3.5 right-0 text-[9px] text-muted-foreground/50">
+                    <span className="absolute -top-3.5 right-0 text-[11px] text-muted-foreground/50">
                       {formatCompactCurrency((highestValue * pct) / 100)}
                     </span>
                   </div>
@@ -201,7 +205,7 @@ export function LaporanView() {
                 <div className="absolute inset-0 flex items-end gap-2">
                   {series.map((item) => (
                     <div key={item.label} className="flex flex-1 flex-col items-center gap-1.5">
-                      <p className="text-[10px] font-bold text-primary leading-none">
+                      <p className="font-mono text-[11px] font-bold text-primary leading-none">
                         {item.revenue > 0 ? formatCompactCurrency(item.revenue) : ""}
                       </p>
                       <div className="flex w-full flex-1 items-end">
@@ -223,7 +227,7 @@ export function LaporanView() {
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-2xl border border-border/70 bg-muted/20 p-5">
                 <p className="text-sm text-muted-foreground">Rata-rata tiket</p>
-                <p className="mt-2 font-heading text-3xl font-semibold">{formatCurrency(summary.averageTicket)}</p>
+                <p className="mt-2 font-mono text-3xl font-semibold">{formatCurrency(summary.averageTicket)}</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Nilai rata-rata per transaksi untuk periode {rangeLabel.toLowerCase()}.
                 </p>
@@ -275,26 +279,26 @@ export function LaporanView() {
                 </div>
                 <div className="rounded-2xl bg-foreground px-4 py-3 text-right text-background shrink-0">
                   <p className="text-xs uppercase tracking-[0.18em] text-background/70">{rangeLabel}</p>
-                  <p className="mt-1.5 font-heading text-xl font-semibold">{formatCurrency(summary.netProfit)}</p>
+                  <p className="mt-1.5 font-mono text-xl font-semibold">{formatCurrency(summary.netProfit)}</p>
                 </div>
               </div>
 
               <div className="grid gap-3 border-b border-dashed border-border/80 py-4 grid-cols-2">
                 <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
                   <p className="text-xs text-muted-foreground">Omzet</p>
-                  <p className="mt-1.5 text-lg font-semibold">{formatCurrency(summary.revenue)}</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.revenue)}</p>
                 </div>
                 <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
                   <p className="text-xs text-muted-foreground">Pengeluaran</p>
-                  <p className="mt-1.5 text-lg font-semibold">{formatCurrency(summary.expenseTotal)}</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.expenseTotal)}</p>
                 </div>
                 <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
                   <p className="text-xs text-muted-foreground">Laba kotor</p>
-                  <p className="mt-1.5 text-lg font-semibold">{formatCurrency(summary.grossProfit)}</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.grossProfit)}</p>
                 </div>
                 <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
                   <p className="text-xs text-muted-foreground">Rata-rata transaksi</p>
-                  <p className="mt-1.5 text-lg font-semibold">{formatCurrency(summary.averageTicket)}</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.averageTicket)}</p>
                 </div>
               </div>
 

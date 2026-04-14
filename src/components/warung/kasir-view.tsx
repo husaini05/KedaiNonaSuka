@@ -109,19 +109,19 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 
       {/* Stock badge */}
       {lowStock && (
-        <p className="mt-1.5 self-start rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+        <p className="mt-1.5 self-start rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
           Sisa {product.stock}
         </p>
       )}
       {outOfStock && (
-        <p className="mt-1.5 self-start rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">
+        <p className="mt-1.5 self-start rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">
           Habis
         </p>
       )}
 
       {/* Price + Add button */}
       <div className="mt-3 flex items-center justify-between gap-2">
-        <p className="font-heading text-[15px] font-bold text-primary leading-none">
+        <p className="font-mono text-[15px] font-bold text-primary leading-none">
           {formatCurrency(product.sellPrice)}
         </p>
         {!outOfStock && (
@@ -512,7 +512,7 @@ export function KasirView() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-white/70">{totalQty} item · {paymentLabels[paymentMethod]}</p>
-                    <p className="mt-0.5 font-heading text-2xl font-bold text-white">
+                    <p className="mt-0.5 font-mono text-2xl font-bold text-white">
                       {formatCurrency(cartTotal)}
                     </p>
                   </div>
@@ -553,7 +553,7 @@ export function KasirView() {
               <span className="text-sm font-semibold">Lihat keranjang</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="font-heading text-[17px] font-bold">{formatCurrency(cartTotal)}</span>
+              <span className="font-mono text-[17px] font-bold">{formatCurrency(cartTotal)}</span>
               <ChevronUp className="size-4 opacity-70" />
             </div>
           </div>
@@ -755,7 +755,7 @@ export function KasirView() {
                   <span>Total tagihan</span>
                   <span>{totalQty} item</span>
                 </div>
-                <p className="mt-1 font-heading text-3xl font-bold text-white tracking-tight">
+                <p className="mt-1 font-mono text-3xl font-bold text-white tracking-tight">
                   {formatCurrency(cartTotal)}
                 </p>
                 <Button
@@ -788,7 +788,7 @@ export function KasirView() {
           <div className="overflow-y-auto flex-1 space-y-3 p-5 pt-4">
             <div className="rounded-2xl bg-primary/8 border border-primary/20 p-4">
               <p className="text-xs text-muted-foreground">Total tagihan</p>
-              <p className="mt-1 font-heading text-3xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
+              <p className="mt-1 font-mono text-3xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{totalQty} item</p>
             </div>
             <div className="rounded-2xl bg-muted/40 p-4">
@@ -799,11 +799,11 @@ export function KasirView() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-green-50 border border-green-100 p-4">
                   <p className="text-xs text-muted-foreground">Uang diterima</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-green-700">{formatCurrency(cashReceivedNum)}</p>
+                  <p className="mt-1 font-mono text-lg font-bold text-green-700">{formatCurrency(cashReceivedNum)}</p>
                 </div>
                 <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
                   <p className="text-xs text-muted-foreground">Kembalian</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-blue-700">{formatCurrency(change)}</p>
+                  <p className="mt-1 font-mono text-lg font-bold text-blue-700">{formatCurrency(change)}</p>
                 </div>
               </div>
             )}
@@ -838,7 +838,7 @@ export function KasirView() {
               {/* Total */}
               <div className="rounded-2xl bg-green-50 border border-green-100 p-4 text-center">
                 <p className="text-xs text-muted-foreground">{paymentLabels[lastTransaction?.paymentMethod ?? "Tunai"]}</p>
-                <p className="mt-1 font-heading text-3xl font-bold text-green-700">
+                <p className="mt-1 font-mono text-3xl font-bold text-green-700">
                   {formatCurrency(lastTransaction?.total ?? 0)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -851,11 +851,11 @@ export function KasirView() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-muted/40 p-4 text-center">
                     <p className="text-xs text-muted-foreground">Diterima</p>
-                    <p className="mt-1 font-heading text-lg font-bold">{formatCurrency(lastCashReceived)}</p>
+                    <p className="mt-1 font-mono text-lg font-bold">{formatCurrency(lastCashReceived)}</p>
                   </div>
                   <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-center">
                     <p className="text-xs text-muted-foreground">Kembalian</p>
-                    <p className="mt-1 font-heading text-lg font-bold text-blue-700">{formatCurrency(lastChange)}</p>
+                    <p className="mt-1 font-mono text-lg font-bold text-blue-700">{formatCurrency(lastChange)}</p>
                   </div>
                 </div>
               )}
