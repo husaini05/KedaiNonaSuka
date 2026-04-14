@@ -561,36 +561,48 @@ export function KasirView() {
         {/* ── Product section ───────────────────────────────────────────── */}
         <div className={cn("space-y-3", cartLines.length > 0 && "pb-20 lg:pb-0")}>
 
-          {/* ── Compact kasir top bar — mobile only, full-screen POS header ── */}
-          <div className="sticky top-0 z-30 -mx-4 bg-background px-4 pb-3 pt-3 lg:static lg:mx-0 lg:bg-transparent lg:p-0">
-            {/* Mini header row — only on mobile */}
-            <div className="mb-3 flex items-center gap-3 lg:hidden">
-              {/* Store name */}
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <span className="text-base leading-none">🍽️</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate font-heading text-[14px] font-bold leading-tight text-foreground">
-                    {settings.storeName}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Kasir</p>
-                </div>
+          {/* ── Compact kasir top bar ── */}
+          <div className="sticky top-0 z-30 -mx-4 bg-background px-3 pb-2 pt-2 lg:static lg:mx-0 lg:bg-transparent lg:p-0">
+            {/* Single row: icon + search + cart badge + avatar — mobile only */}
+            <div className="flex items-center gap-2 lg:hidden">
+              {/* Store icon */}
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <span className="text-base leading-none">🍽️</span>
               </div>
 
-              {/* Cart quick-peek badge */}
+              {/* Search — flex-1 */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Cari produk..."
+                  className="h-9 rounded-2xl bg-white pl-8 pr-8 text-sm shadow-sm border-border/60"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 flex size-4 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                  >
+                    <X className="size-2.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Cart badge */}
               {cartLines.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setCartSheetOpen(true)}
-                  className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-white shrink-0"
+                  className="flex items-center gap-1 rounded-full bg-primary px-2.5 py-1.5 text-white shrink-0"
                 >
                   <ShoppingBasket className="size-3.5" />
                   <span className="text-xs font-bold">{totalQty}</span>
                 </button>
               )}
 
-              {/* User avatar → Pengaturan */}
+              {/* User avatar */}
               <Link
                 href="/pengaturan"
                 className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
@@ -598,8 +610,9 @@ export function KasirView() {
                 {userInitials}
               </Link>
             </div>
-            {/* Search */}
-            <div className="relative">
+
+            {/* Desktop search */}
+            <div className="relative hidden lg:block">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
@@ -619,20 +632,20 @@ export function KasirView() {
             </div>
 
             {/* Category chips */}
-            <div className="scrollbar-hide mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
+            <div className="scrollbar-hide mt-1.5 flex gap-1.5 overflow-x-auto pb-0.5">
               {categoryLabels.map((item) => (
                 <button
                   key={item.value}
                   type="button"
                   onClick={() => setCategory(item.value)}
                   className={cn(
-                    "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-95",
+                    "flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150 active:scale-95",
                     category === item.value
                       ? "bg-primary text-white shadow-[0_4px_14px_-6px_rgba(232,130,26,0.65)]"
                       : "bg-white text-muted-foreground border border-border/60 hover:border-primary/40 hover:text-primary shadow-sm"
                   )}
                 >
-                  <span className="text-base leading-none">{item.emoji}</span>
+                  <span className="text-sm leading-none">{item.emoji}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
