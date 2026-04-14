@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertTriangle, ArrowRightLeft, ReceiptText, WalletCards } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, ArrowRightLeft, PackagePlus, ReceiptText, ScrollText, ShoppingBasket, WalletCards } from "lucide-react";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDateTime, formatTime } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency, formatDateTime, formatTime } from "@/lib/format";
 
 function SkeletonCard({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-2xl bg-white shadow-sm ${className}`} />;
@@ -62,7 +63,7 @@ export function DashboardView() {
         </p>
         <div className="mt-3 flex items-center gap-1.5">
           <div className="rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold text-primary-foreground">
-            {formatCurrency(todaySales)} hari ini
+            {formatCompactCurrency(todaySales)} hari ini
           </div>
           <div className="rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-medium text-primary-foreground/80">
             {todayTransactions.length} transaksi
@@ -70,11 +71,36 @@ export function DashboardView() {
         </div>
       </div>
 
+      {/* ── Quick actions ── */}
+      <div className="grid grid-cols-3 gap-3">
+        <Link
+          href="/kasir"
+          className="flex flex-col items-center gap-2 rounded-2xl bg-primary p-4 shadow-sm transition-transform active:scale-[0.96]"
+        >
+          <ShoppingBasket className="size-5 text-white" />
+          <span className="text-xs font-semibold text-white">Buka Kasir</span>
+        </Link>
+        <Link
+          href="/inventaris"
+          className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-transform active:scale-[0.96]"
+        >
+          <PackagePlus className="size-5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">Tambah Produk</span>
+        </Link>
+        <Link
+          href="/laporan"
+          className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-transform active:scale-[0.96]"
+        >
+          <ScrollText className="size-5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">Laporan</span>
+        </Link>
+      </div>
+
       {/* ── Stat cards ── */}
       <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Omzet hari ini"
-          value={formatCurrency(todaySales)}
+          value={formatCompactCurrency(todaySales)}
           description={`${todayTransactions.length} transaksi masuk hari ini`}
         />
         <StatCard
@@ -91,7 +117,7 @@ export function DashboardView() {
         />
         <StatCard
           title="Kasbon aktif"
-          value={formatCurrency(outstandingDebt)}
+          value={formatCompactCurrency(outstandingDebt)}
           description="Piutang pelanggan belum lunas"
         />
       </section>

@@ -184,24 +184,39 @@ export function LaporanView() {
                 </div>
               </div>
 
-              <div className="mt-6 flex h-60 items-end gap-2">
-                {series.map((item) => (
-                  <div key={item.label} className="flex flex-1 flex-col items-center gap-1.5">
-                    <p className="text-[10px] font-bold text-primary leading-none">
-                      {item.revenue > 0 ? formatCompactCurrency(item.revenue) : ""}
-                    </p>
-                    <div className="flex w-full flex-1 items-end">
-                      <div
-                        className="w-full rounded-t-[14px] bg-gradient-to-t from-primary to-chart-3 shadow-[0_12px_24px_-14px_rgba(186,92,35,0.75)] transition-all duration-500"
-                        style={{
-                          height: `${Math.max(8, (item.revenue / highestValue) * 100)}%`,
-                          opacity: item.revenue === 0 ? 0.25 : 1,
-                        }}
-                      />
-                    </div>
-                    <p className="text-[11px] font-medium text-foreground leading-none">{item.label}</p>
+              <div className="relative mt-6 h-60">
+                {/* Horizontal grid lines */}
+                {[25, 50, 75].map((pct) => (
+                  <div
+                    key={pct}
+                    className="pointer-events-none absolute inset-x-0 border-t border-border/40"
+                    style={{ bottom: `${pct}%` }}
+                  >
+                    <span className="absolute -top-3.5 right-0 text-[9px] text-muted-foreground/50">
+                      {formatCompactCurrency((highestValue * pct) / 100)}
+                    </span>
                   </div>
                 ))}
+                {/* Bars */}
+                <div className="absolute inset-0 flex items-end gap-2">
+                  {series.map((item) => (
+                    <div key={item.label} className="flex flex-1 flex-col items-center gap-1.5">
+                      <p className="text-[10px] font-bold text-primary leading-none">
+                        {item.revenue > 0 ? formatCompactCurrency(item.revenue) : ""}
+                      </p>
+                      <div className="flex w-full flex-1 items-end">
+                        <div
+                          className="w-full rounded-t-[14px] bg-gradient-to-t from-primary to-chart-3 shadow-[0_12px_24px_-14px_rgba(186,92,35,0.75)] transition-all duration-500"
+                          style={{
+                            height: `${Math.max(8, (item.revenue / highestValue) * 100)}%`,
+                            opacity: item.revenue === 0 ? 0.25 : 1,
+                          }}
+                        />
+                      </div>
+                      <p className="text-[11px] font-medium text-foreground leading-none">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

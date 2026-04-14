@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Package2, ScrollText, ShoppingBasket, Wallet } from "lucide-react";
+import { Gauge, Package2, ScrollText, Settings2, ShoppingBasket, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/dashboard", label: "Beranda",  icon: Gauge },
-  { href: "/kasir",     label: "Kasir",    icon: ShoppingBasket },
-  { href: "/inventaris",label: "Stok",     icon: Package2 },
-  { href: "/buku-hutang",label: "Hutang",  icon: Wallet },
-  { href: "/laporan",   label: "Laporan",  icon: ScrollText },
+  { href: "/dashboard",   label: "Beranda",    icon: Gauge },
+  { href: "/kasir",       label: "Kasir",      icon: ShoppingBasket },
+  { href: "/inventaris",  label: "Stok",       icon: Package2 },
+  { href: "/laporan",     label: "Laporan",    icon: ScrollText },
+  { href: "/pengaturan",  label: "Pengaturan", icon: Settings2 },
 ];
 
 export function BottomNav() {

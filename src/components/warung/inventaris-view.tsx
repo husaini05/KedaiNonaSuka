@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
 import { formatCurrency } from "@/lib/format";
 import { Product, ProductCategory, ProductDraft } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -315,9 +316,15 @@ export function InventarisView() {
       {/* ── Mobile card list ── */}
       <div className="space-y-3 lg:hidden">
         {filteredProducts.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Tidak ada produk yang cocok dengan pencarian.
-          </p>
+          <EmptyState
+            emoji={products.length === 0 ? "📦" : "🔍"}
+            title={products.length === 0 ? "Belum ada produk" : "Tidak ditemukan"}
+            description={
+              products.length === 0
+                ? "Tap 'Tambah barang' untuk menambahkan produk pertama ke inventaris."
+                : "Coba kata kunci lain atau hapus filter pencarian."
+            }
+          />
         )}
         {filteredProducts.map((product) => {
           const lowStock = product.stock <= product.minimumStock;

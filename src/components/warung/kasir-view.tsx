@@ -84,7 +84,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
       onClick={onAdd}
       disabled={outOfStock}
       className={cn(
-        "group relative flex flex-col rounded-2xl bg-white p-3.5 text-left shadow-sm",
+        "group relative flex min-h-[9.5rem] flex-col rounded-2xl bg-white p-3.5 text-left shadow-sm",
         "transition-all duration-150 active:scale-[0.94] active:shadow-none select-none",
         outOfStock
           ? "cursor-not-allowed opacity-50"
@@ -201,6 +201,11 @@ export function KasirView() {
     const matchCat = category === "Semua" || p.category === category;
     return matchQuery && matchCat;
   });
+
+  const productCountByCategory = products.reduce<Record<string, number>>((acc, p) => {
+    acc[p.category] = (acc[p.category] ?? 0) + 1;
+    return acc;
+  }, {});
 
   function buildReceiptText() {
     if (!lastTransaction) return "";
@@ -577,7 +582,7 @@ export function KasirView() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Cari produk..."
-                  className="h-9 rounded-2xl bg-white pl-8 pr-8 text-sm shadow-sm border-border/60"
+                  className="h-10 rounded-2xl bg-white pl-8 pr-8 text-sm shadow-sm border-border/60"
                 />
                 {query && (
                   <button
@@ -647,6 +652,16 @@ export function KasirView() {
                 >
                   <span className="text-sm leading-none">{item.emoji}</span>
                   <span>{item.label}</span>
+                  {item.value !== "Semua" && (productCountByCategory[item.value] ?? 0) > 0 && (
+                    <span className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none",
+                      category === item.value
+                        ? "bg-white/30 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}>
+                      {productCountByCategory[item.value]}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

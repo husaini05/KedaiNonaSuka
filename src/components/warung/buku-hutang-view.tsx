@@ -20,7 +20,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
+import { EmptyState } from "@/components/empty-state";
+import { formatCompactCurrency, formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { DebtDraft } from "@/lib/types";
 
 const emptyDraft: DebtDraft = {
@@ -36,6 +37,7 @@ export function BukuHutangView() {
   const [status, setStatus] = useState<"semua" | "belum" | "lunas">("semua");
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState<DebtDraft>(emptyDraft);
+  const [confirmPaidId, setConfirmPaidId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -89,12 +91,48 @@ export function BukuHutangView() {
     }
   }
 
+  const confirmPaidDebt = debts.find((d) => d.id === confirmPaidId) ?? null;
+
   return (
+    <>
+    {/* ── Konfirmasi lunas ── */}
+    <Dialog open={Boolean(confirmPaidId)} onOpenChange={(open) => !open && setConfirmPaidId(null)}>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-sm rounded-[28px] p-0 flex flex-col overflow-hidden">
+        <DialogHeader className="p-5 pb-0">
+          <DialogTitle className="font-heading text-xl">Tandai lunas?</DialogTitle>
+          <DialogDescription>
+            {confirmPaidDebt
+              ? `Tandai hutang ${confirmPaidDebt.borrowerName} sebesar ${formatCurrency(confirmPaidDebt.amount)} sebagai lunas. Tindakan ini tidak bisa dibatalkan.`
+              : "Konfirmasi pelunasan hutang ini."}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
+          <Button
+            type="button"
+            onClick={async () => {
+              if (!confirmPaidId) return;
+              try {
+                await markDebtPaid(confirmPaidId);
+                toast.success(`${confirmPaidDebt?.borrowerName ?? "Pelanggan"} ditandai lunas.`);
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Gagal memperbarui status hutang.");
+              } finally {
+                setConfirmPaidId(null);
+              }
+            }}
+          >
+            <CheckCircle2 className="size-4" />
+            Ya, tandai lunas
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <div className="space-y-4">
       <section className="grid gap-3 grid-cols-2 md:grid-cols-3">
         <StatCard
           title="Kasbon aktif"
-          value={formatCurrency(outstandingTotal)}
+          value={formatCompactCurrency(outstandingTotal)}
           description="Total piutang yang masih perlu ditagih."
           tone="warn"
         />
@@ -205,9 +243,17 @@ export function BukuHutangView() {
       {/* Debt cards */}
       <div className="grid gap-4 lg:grid-cols-2">
         {filteredDebts.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground col-span-2">
-            Tidak ada kasbon yang cocok dengan filter saat ini.
-          </p>
+          <div className="col-span-2">
+            <EmptyState
+              emoji={debts.length === 0 ? "📒" : "🔍"}
+              title={debts.length === 0 ? "Belum ada kasbon" : "Tidak ditemukan"}
+              description={
+                debts.length === 0
+                  ? "Tap 'Tambah kasbon' untuk mencatat hutang pelanggan pertama."
+                  : "Coba kata kunci lain atau ubah filter status."
+              }
+            />
+          </div>
         )}
         {filteredDebts.map((debt) => (
           <Card key={debt.id} className="rounded-2xl border border-border/60 bg-white shadow-sm">
@@ -272,14 +318,7 @@ export function BukuHutangView() {
                   <Button
                     type="button"
                     className="rounded-full"
-                    onClick={async () => {
-                      try {
-                        await markDebtPaid(debt.id);
-                        toast.success(`${debt.borrowerName} ditandai lunas.`);
-                      } catch (error) {
-                        toast.error(error instanceof Error ? error.message : "Gagal memperbarui status hutang.");
-                      }
-                    }}
+                    onClick={() => setConfirmPaidId(debt.id)}
                   >
                     <CheckCircle2 className="size-4" />
                     Tandai lunas
@@ -291,5 +330,6 @@ export function BukuHutangView() {
         ))}
       </div>
     </div>
+    </>
   );
 }
