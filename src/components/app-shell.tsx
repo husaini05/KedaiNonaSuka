@@ -48,8 +48,8 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ── Mobile sticky top bar ── */}
-      <header className="sticky top-0 z-40 lg:hidden">
+      {/* ── Mobile sticky top bar — hidden on /kasir (POS uses its own header) ── */}
+      <header className={cn("sticky top-0 z-40 lg:hidden", pathname === "/kasir" && "hidden")}>
         <div className="flex h-14 items-center gap-3 border-b border-border/60 bg-white px-4">
           {/* Store icon — taps to Beranda */}
           <Link

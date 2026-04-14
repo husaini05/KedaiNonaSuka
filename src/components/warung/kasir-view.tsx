@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   BanknoteArrowDown,
   CheckCircle2,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
+import { useSession } from "@/lib/auth-client";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, getInitials } from "@/lib/format";
 import { PaymentMethod, Product, ProductCategory, Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -168,6 +170,9 @@ export function KasirView() {
     setPaymentMethod,
     checkout,
   } = useAppState();
+
+  const { data: session } = useSession();
+  const userInitials = getInitials(session?.user?.name || session?.user?.email || "KN");
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"Semua" | ProductCategory>("Semua");
@@ -556,8 +561,43 @@ export function KasirView() {
         {/* ── Product section ───────────────────────────────────────────── */}
         <div className={cn("space-y-3", cartLines.length > 0 && "pb-20 lg:pb-0")}>
 
-          {/* Sticky search + category filter */}
-          <div className="sticky top-14 z-30 -mx-4 bg-background px-4 pb-3 pt-2 lg:static lg:mx-0 lg:bg-transparent lg:p-0">
+          {/* ── Compact kasir top bar — mobile only, full-screen POS header ── */}
+          <div className="sticky top-0 z-30 -mx-4 bg-background px-4 pb-3 pt-3 lg:static lg:mx-0 lg:bg-transparent lg:p-0">
+            {/* Mini header row — only on mobile */}
+            <div className="mb-3 flex items-center gap-3 lg:hidden">
+              {/* Store name */}
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <span className="text-base leading-none">🍽️</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-heading text-[14px] font-bold leading-tight text-foreground">
+                    {settings.storeName}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Kasir</p>
+                </div>
+              </div>
+
+              {/* Cart quick-peek badge */}
+              {cartLines.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCartSheetOpen(true)}
+                  className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-white shrink-0"
+                >
+                  <ShoppingBasket className="size-3.5" />
+                  <span className="text-xs font-bold">{totalQty}</span>
+                </button>
+              )}
+
+              {/* User avatar → Pengaturan */}
+              <Link
+                href="/pengaturan"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
+              >
+                {userInitials}
+              </Link>
+            </div>
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
