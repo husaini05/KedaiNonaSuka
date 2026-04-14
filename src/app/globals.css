@@ -39,80 +39,66 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.625);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.5);
 }
 
+/* ── Light mode (Android default) ─────────────────────────────────────────── */
 :root {
-  --background: #fdf6ec;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-  --popover: #fffcf5;
-  --popover-foreground: #1a1a1a;
-  --primary: #e8821a;
-  --primary-foreground: #ffffff;
-  --secondary: #fde8ca;
-  --secondary-foreground: #7a3d0a;
-  --muted: #faeedd;
-  --muted-foreground: #7a6050;
-  --accent: #fff3e0;
-  --accent-foreground: #7a3d0a;
-  --destructive: #d63b2f;
-  --border: rgba(0, 0, 0, 0.09);
-  --input: rgba(255, 252, 245, 0.96);
-  --ring: rgba(232, 130, 26, 0.45);
-  --chart-1: #e8821a;
-  --chart-2: #5c8143;
-  --chart-3: #f0a030;
-  --chart-4: #c8681a;
-  --chart-5: #3d6179;
-  --radius: 1rem;
-  --sidebar: rgba(26, 14, 4, 0.97);
-  --sidebar-foreground: #fff5e8;
-  --sidebar-primary: #ff9a3c;
-  --sidebar-primary-foreground: #1a0c02;
-  --sidebar-accent: rgba(255, 154, 60, 0.14);
-  --sidebar-accent-foreground: #fff5e8;
-  --sidebar-border: rgba(255, 245, 232, 0.10);
-  --sidebar-ring: rgba(255, 154, 60, 0.5);
-}
+  /* Flat neutral background — standard Android Material surface */
+  --background: #F5F6FA;
+  --foreground: #111827;
 
-.dark {
-  --background: #1a0e04;
-  --foreground: #fff5e8;
-  --card: rgba(40, 22, 8, 0.95);
-  --card-foreground: #fff5e8;
-  --popover: #281606;
-  --popover-foreground: #fff5e8;
-  --primary: #ff9a3c;
-  --primary-foreground: #1a0c02;
-  --secondary: #4a2e10;
-  --secondary-foreground: #fff5e8;
-  --muted: #2e1a08;
-  --muted-foreground: #e2c8a0;
-  --accent: #3c2208;
-  --accent-foreground: #fff5e8;
-  --destructive: #ff7a65;
-  --border: rgba(255, 245, 232, 0.12);
-  --input: rgba(255, 245, 232, 0.08);
-  --ring: rgba(255, 154, 60, 0.45);
-  --chart-1: #ff9a3c;
-  --chart-2: #90b16f;
-  --chart-3: #f0aa4b;
-  --chart-4: #e8821a;
-  --chart-5: #75b5da;
-  --sidebar: #0e0703;
-  --sidebar-foreground: #fff5e8;
-  --sidebar-primary: #ff9a3c;
-  --sidebar-primary-foreground: #1a0c02;
+  /* Cards: pure white, solid — no transparency */
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+
+  /* Brand orange */
+  --primary: #E8821A;
+  --primary-foreground: #FFFFFF;
+
+  /* Soft orange tint for secondary surfaces */
+  --secondary: #FFF3E0;
+  --secondary-foreground: #92400E;
+
+  /* Neutral surfaces */
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #FFF3E0;
+  --accent-foreground: #92400E;
+
+  /* Error */
+  --destructive: #EF4444;
+
+  /* Structural */
+  --border: rgba(0, 0, 0, 0.08);
+  --input: #F3F4F6;
+  --ring: rgba(232, 130, 26, 0.45);
+
+  /* Chart */
+  --chart-1: #E8821A;
+  --chart-2: #22C55E;
+  --chart-3: #F59E0B;
+  --chart-4: #C8681A;
+  --chart-5: #3B82F6;
+
+  /* Base radius: 16px */
+  --radius: 1rem;
+
+  /* Desktop sidebar (dark, warm wood) */
+  --sidebar: #1C0A02;
+  --sidebar-foreground: #FFF5E8;
+  --sidebar-primary: #FF9A3C;
+  --sidebar-primary-foreground: #1A0C02;
   --sidebar-accent: rgba(255, 154, 60, 0.14);
-  --sidebar-accent-foreground: #fff5e8;
+  --sidebar-accent-foreground: #FFF5E8;
   --sidebar-border: rgba(255, 245, 232, 0.10);
   --sidebar-ring: rgba(255, 154, 60, 0.5);
 }
@@ -124,29 +110,34 @@
 
   html {
     @apply font-sans;
+    /* Smooth scrolling for the whole app */
+    scroll-behavior: smooth;
+    /* Android-like background */
+    background-color: #F5F6FA;
   }
 
   body {
     @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(circle at top left, rgba(255, 154, 60, 0.22), transparent 30%),
-      radial-gradient(circle at bottom right, rgba(232, 130, 26, 0.10), transparent 28%),
-      linear-gradient(160deg, #fdf6ec 0%, #faeedd 45%, #fdf8f0 100%);
     min-height: 100vh;
+    /* Disable the tap highlight box on Android */
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
   }
 
+  /* Smooth selection */
   ::selection {
     background: rgba(232, 130, 26, 0.20);
   }
 
-  /* Prevent iOS/Android from zooming in on input focus */
+  /* Prevent auto-zoom on input focus (iOS/Android) */
   input,
   textarea,
   select {
     font-size: max(16px, 1em);
   }
 
-  /* Contain scroll bounce inside scroll containers, not the whole page */
+  /* Contain scroll bounce inside scroll containers */
   [data-radix-scroll-area-viewport],
   .overflow-y-auto,
   .overflow-auto {
@@ -155,17 +146,27 @@
 }
 
 @layer components {
-  .glass-panel {
-    background: rgba(255, 252, 245, 0.75);
-    backdrop-filter: blur(20px);
+  /* Standard Android card */
+  .card-android {
+    @apply rounded-2xl bg-white shadow-sm;
   }
 
-  /* Hide scrollbar on horizontal scroll containers (category pills, etc.) */
+  /* Hide scrollbar (category pills, horizontal scroll) */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Page section spacing */
+  .page-section {
+    @apply space-y-3;
+  }
+
+  /* Section title */
+  .section-title {
+    @apply text-base font-heading font-bold text-foreground;
   }
 }

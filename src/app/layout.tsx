@@ -1,28 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { IBM_Plex_Mono, Poppins, Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AppStateProvider } from "@/components/providers/app-state-provider";
 import { PWARegister } from "@/components/pwa-register";
 import "./globals.css";
 
+// Body text — clean, highly readable on Android screens
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const bricolageGrotesque = Bricolage_Grotesque({
+// Heading font — Poppins: rounded, friendly, very popular in Indonesian mobile apps
+const poppins = Poppins({
   variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["600", "700", "800"],
 });
 
+// Monospace for currency/numbers
 const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Kedai Nona Suka — Kasir & Operasional",
+  title: "Kedai Nona Suka",
   description: "Sistem kasir & manajemen operasional Kedai Nona Suka. Makan enak, kantong aman.",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -48,12 +53,12 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${plusJakartaSans.variable} ${bricolageGrotesque.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${poppins.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppStateProvider>
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="top-center" />
           <PWARegister />
         </AppStateProvider>
       </body>

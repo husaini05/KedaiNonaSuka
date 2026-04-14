@@ -6,11 +6,11 @@ import { Gauge, Package2, ScrollText, ShoppingBasket, Wallet } from "lucide-reac
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/dashboard", label: "Dashboard", icon: Gauge },
-  { href: "/kasir", label: "Kasir", icon: ShoppingBasket },
-  { href: "/inventaris", label: "Stok", icon: Package2 },
-  { href: "/buku-hutang", label: "Hutang", icon: Wallet },
-  { href: "/laporan", label: "Laporan", icon: ScrollText },
+  { href: "/dashboard", label: "Beranda",  icon: Gauge },
+  { href: "/kasir",     label: "Kasir",    icon: ShoppingBasket },
+  { href: "/inventaris",label: "Stok",     icon: Package2 },
+  { href: "/buku-hutang",label: "Hutang",  icon: Wallet },
+  { href: "/laporan",   label: "Laporan",  icon: ScrollText },
 ];
 
 export function BottomNav() {
@@ -21,28 +21,43 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <div className="flex border-t border-border/40 bg-background/96 backdrop-blur-xl">
+      {/* Material 3-inspired bottom nav: white, top-shadow, pill active indicator */}
+      <div className="flex bg-white shadow-[0_-1px_0_rgba(0,0,0,0.07),0_-4px_12px_rgba(0,0,0,0.04)] px-1">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-colors active:scale-95",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )}
+              className="flex flex-1 flex-col items-center pt-1.5 pb-2 gap-0.5 transition-opacity active:opacity-60"
             >
+              {/* Pill indicator — filled orange when active */}
               <div
                 className={cn(
-                  "flex size-8 items-center justify-center rounded-full transition-all",
-                  isActive && "bg-primary/12"
+                  "flex h-8 w-[3.75rem] items-center justify-center rounded-full transition-all duration-200",
+                  isActive ? "bg-primary/15" : "bg-transparent"
                 )}
               >
-                <Icon className={cn("size-5", isActive && "stroke-[2.5]")} />
+                <Icon
+                  className={cn(
+                    "size-[22px] transition-all duration-200",
+                    isActive ? "text-primary" : "text-gray-400"
+                  )}
+                  strokeWidth={isActive ? 2.5 : 1.75}
+                />
               </div>
-              <span>{item.label}</span>
+
+              {/* Label */}
+              <span
+                className={cn(
+                  "text-[11px] leading-none font-medium transition-colors",
+                  isActive ? "text-primary font-semibold" : "text-gray-400"
+                )}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}

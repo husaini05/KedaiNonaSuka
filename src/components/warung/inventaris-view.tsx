@@ -160,13 +160,13 @@ export function InventarisView() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-[26px] bg-white/60 border border-white/60" />
+            <div key={i} className="h-24 rounded-2xl bg-white shadow-sm" />
           ))}
         </div>
-        <div className="h-10 w-64 rounded-2xl bg-white/60" />
-        <div className="h-96 rounded-[26px] bg-white/60 border border-white/60" />
+        <div className="h-10 w-64 rounded-2xl bg-white" />
+        <div className="h-64 rounded-2xl bg-white shadow-sm" />
       </div>
     );
   }
@@ -201,7 +201,6 @@ export function InventarisView() {
         toast.error("Lengkapi data produk lebih dulu.");
         return;
       }
-
       await addProduct(draft);
       setDraft(emptyDraft);
       setCreateOpen(false);
@@ -217,7 +216,6 @@ export function InventarisView() {
         toast.error("Periksa kembali data yang ingin diperbarui.");
         return;
       }
-
       await updateProduct(editingProduct.id, editDraft);
       setEditingProduct(null);
       toast.success(`${editDraft.name} berhasil diperbarui.`);
@@ -232,7 +230,6 @@ export function InventarisView() {
         toast.error("Masukkan jumlah restok yang valid.");
         return;
       }
-
       await restockProduct(restockTarget.id, restockAmount);
       toast.success(`${restockTarget.name} ditambah ${restockAmount} stok.`);
       setRestockTarget(null);
@@ -242,158 +239,244 @@ export function InventarisView() {
     }
   }
 
+  function openEdit(product: Product) {
+    setEditingProduct(product);
+    setEditDraft({
+      name: product.name,
+      category: product.category,
+      buyPrice: product.buyPrice,
+      sellPrice: product.sellPrice,
+      stock: product.stock,
+      minimumStock: product.minimumStock,
+      description: product.description,
+    });
+  }
+
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-3 grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total SKU"
           value={`${products.length} produk`}
-          description="Produk siap jual yang sedang aktif di warung."
+          description="Produk aktif di warung."
         />
         <StatCard
           title="Stok menipis"
           value={`${lowStockProducts.length} item`}
-          description="Pantau dan restok sebelum pelanggan kehabisan pilihan."
+          description="Perlu segera direstok."
           tone="warn"
         />
-        <StatCard
-          title="Nilai stok"
-          value={formatCurrency(totalInventoryValue)}
-          description="Perkiraan modal yang sedang tersimpan di inventaris."
-          tone="accent"
-        />
+        <div className="col-span-2 lg:col-span-1">
+          <StatCard
+            title="Nilai stok"
+            value={formatCurrency(totalInventoryValue)}
+            description="Estimasi modal di inventaris."
+            tone="accent"
+          />
+        </div>
       </section>
 
-      <Card className="border-white/60 bg-white/74 shadow-[0_28px_70px_-45px_rgba(66,38,20,0.55)]">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <CardTitle className="font-heading text-2xl">Inventaris barang jadi</CardTitle>
-            <CardDescription>
-              Semua perubahan di layar ini langsung mengubah state mock yang dipakai POS dan laporan.
-            </CardDescription>
-          </div>
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <div className="relative min-w-[260px]">
-              <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Cari nama, kategori, atau catatan"
-                className="h-11 rounded-2xl bg-white/85 pl-9"
-              />
+      {/* Search + Add button */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Cari nama atau kategori..."
+            className="h-11 rounded-2xl pl-9"
+          />
+        </div>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogTrigger render={<Button size="lg" className="h-11 rounded-2xl shrink-0" />}>
+            <PackagePlus className="size-4" />
+            <span className="hidden sm:inline">Tambah barang</span>
+            <span className="sm:hidden">Tambah</span>
+          </DialogTrigger>
+          <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle className="font-heading text-2xl">Tambah produk baru</DialogTitle>
+              <DialogDescription>
+                Isi data minimum supaya kasir bisa langsung menjual barang ini.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-6 pt-4">
+              <ProductForm draft={draft} onChange={setDraft} />
             </div>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger
-                render={<Button size="lg" className="h-11 rounded-2xl" />}
-              >
-                <PackagePlus className="size-4" />
-                Tambah barang
-              </DialogTrigger>
-              <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
-                <DialogHeader className="p-6 pb-0">
-                  <DialogTitle className="font-heading text-2xl">Tambah produk baru</DialogTitle>
-                  <DialogDescription>
-                    Isi data minimum supaya kasir bisa langsung menjual barang ini.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="p-6 pt-4">
-                  <ProductForm draft={draft} onChange={setDraft} />
+            <DialogFooter className="rounded-b-[28px]" showCloseButton>
+              <Button type="button" onClick={() => void handleCreateProduct()}>
+                Simpan produk
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* ── Mobile card list ── */}
+      <div className="space-y-3 lg:hidden">
+        {filteredProducts.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Tidak ada produk yang cocok dengan pencarian.
+          </p>
+        )}
+        {filteredProducts.map((product) => {
+          const lowStock = product.stock <= product.minimumStock;
+          return (
+            <div
+              key={product.id}
+              className={cn(
+                "rounded-2xl bg-white p-4 shadow-sm",
+                lowStock && "ring-1 ring-primary/30"
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm leading-tight truncate">{product.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
+                  {product.description ? (
+                    <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">{product.description}</p>
+                  ) : null}
                 </div>
-                <DialogFooter className="rounded-b-[28px]" showCloseButton>
-                  <Button type="button" onClick={() => void handleCreateProduct()}>
-                    Simpan produk
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {lowStock && <AlertTriangle className="size-3.5 text-primary" />}
+                  <Badge
+                    className={cn(
+                      "rounded-full border-0",
+                      lowStock ? "bg-primary text-primary-foreground" : "bg-green-100 text-green-700"
+                    )}
+                  >
+                    {product.stock} pcs
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Harga jual</p>
+                  <p className="text-sm font-semibold mt-0.5">{formatCurrency(product.sellPrice)}</p>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Harga beli</p>
+                  <p className="text-sm font-semibold mt-0.5">{formatCurrency(product.buyPrice)}</p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full flex-1 h-9"
+                  onClick={() => openEdit(product)}
+                >
+                  <PencilLine className="size-3.5" />
+                  Edit
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-full flex-1 h-9"
+                  onClick={() => setRestockTarget(product)}
+                >
+                  <Warehouse className="size-3.5" />
+                  Restok
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Desktop table ── */}
+      <Card className="hidden lg:block border-border/60 bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle className="font-heading text-xl">Inventaris barang jadi</CardTitle>
+          <CardDescription>
+            Semua perubahan di layar ini langsung mengubah state yang dipakai POS dan laporan.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto -mx-6 px-6">
-          <Table className="min-w-[760px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Produk</TableHead>
-                <TableHead>Kategori</TableHead>
-                <TableHead>Harga beli</TableHead>
-                <TableHead>Harga jual</TableHead>
-                <TableHead>Stok</TableHead>
-                <TableHead>Minimum</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => {
-                const lowStock = product.stock <= product.minimumStock;
-
-                return (
-                  <TableRow key={product.id} className={cn(lowStock && "bg-primary/6")}>
-                    <TableCell className="min-w-[220px]">
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">{product.description}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{formatCurrency(product.buyPrice)}</TableCell>
-                    <TableCell>{formatCurrency(product.sellPrice)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          className={cn(
-                            "rounded-full border-0",
-                            lowStock ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-                          )}
-                        >
-                          {product.stock} pcs
-                        </Badge>
-                        {lowStock ? <AlertTriangle className="size-4 text-primary" /> : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>{product.minimumStock} pcs</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="rounded-full"
-                          onClick={() => {
-                            setEditingProduct(product);
-                            setEditDraft({
-                              name: product.name,
-                              category: product.category,
-                              buyPrice: product.buyPrice,
-                              sellPrice: product.sellPrice,
-                              stock: product.stock,
-                              minimumStock: product.minimumStock,
-                              description: product.description,
-                            });
-                          }}
-                        >
-                          <PencilLine className="size-4" />
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          className="rounded-full"
-                          onClick={() => setRestockTarget(product)}
-                        >
-                          <Warehouse className="size-4" />
-                          Restok
-                        </Button>
-                      </div>
+            <Table className="min-w-[760px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Produk</TableHead>
+                  <TableHead>Kategori</TableHead>
+                  <TableHead>Harga beli</TableHead>
+                  <TableHead>Harga jual</TableHead>
+                  <TableHead>Stok</TableHead>
+                  <TableHead>Minimum</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => {
+                  const lowStock = product.stock <= product.minimumStock;
+                  return (
+                    <TableRow key={product.id} className={cn(lowStock && "bg-primary/6")}>
+                      <TableCell className="min-w-[220px]">
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-muted-foreground">{product.description}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell>{formatCurrency(product.buyPrice)}</TableCell>
+                      <TableCell>{formatCurrency(product.sellPrice)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={cn(
+                              "rounded-full border-0",
+                              lowStock ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+                            )}
+                          >
+                            {product.stock} pcs
+                          </Badge>
+                          {lowStock ? <AlertTriangle className="size-4 text-primary" /> : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>{product.minimumStock} pcs</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => openEdit(product)}
+                          >
+                            <PencilLine className="size-4" />
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                            onClick={() => setRestockTarget(product)}
+                          >
+                            <Warehouse className="size-4" />
+                            Restok
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {filteredProducts.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                      Tidak ada produk yang cocok dengan pencarian.
                     </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
 
+      {/* Edit dialog */}
       <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => !open && setEditingProduct(null)}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
           <DialogHeader className="p-6 pb-0">
@@ -411,6 +494,7 @@ export function InventarisView() {
         </DialogContent>
       </Dialog>
 
+      {/* Restock dialog */}
       <Dialog open={Boolean(restockTarget)} onOpenChange={(open) => !open && setRestockTarget(null)}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
           <DialogHeader className="p-6 pb-0">
@@ -420,7 +504,7 @@ export function InventarisView() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-6 pt-4">
-            <div className="rounded-[22px] border border-border/70 bg-white/75 p-4">
+            <div className="rounded-2xl border border-border/70 bg-muted/30 p-4">
               <p className="text-sm text-muted-foreground">Stok sekarang</p>
               <p className="mt-2 font-heading text-3xl font-semibold">
                 {restockTarget?.stock ?? 0} pcs
