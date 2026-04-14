@@ -293,17 +293,17 @@ export function InventarisView() {
             <span className="hidden sm:inline">Tambah barang</span>
             <span className="sm:hidden">Tambah</span>
           </DialogTrigger>
-          <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
-            <DialogHeader className="p-6 pb-0">
-              <DialogTitle className="font-heading text-2xl">Tambah produk baru</DialogTitle>
+          <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+            <DialogHeader className="shrink-0 p-5 pb-0">
+              <DialogTitle className="font-heading text-xl">Tambah produk baru</DialogTitle>
               <DialogDescription>
                 Isi data minimum supaya kasir bisa langsung menjual barang ini.
               </DialogDescription>
             </DialogHeader>
-            <div className="p-6 pt-4">
+            <div className="overflow-y-auto flex-1 p-5 pt-4">
               <ProductForm draft={draft} onChange={setDraft} />
             </div>
-            <DialogFooter className="rounded-b-[28px]" showCloseButton>
+            <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
               <Button type="button" onClick={() => void handleCreateProduct()}>
                 Simpan produk
               </Button>
@@ -478,15 +478,15 @@ export function InventarisView() {
 
       {/* Edit dialog */}
       <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => !open && setEditingProduct(null)}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="font-heading text-2xl">Edit produk</DialogTitle>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <DialogHeader className="shrink-0 p-5 pb-0">
+            <DialogTitle className="font-heading text-xl">Edit produk</DialogTitle>
             <DialogDescription>Perbarui stok, harga, atau posisi minimum sebelum notifikasi muncul.</DialogDescription>
           </DialogHeader>
-          <div className="p-6 pt-4">
+          <div className="overflow-y-auto flex-1 p-5 pt-4">
             <ProductForm draft={editDraft} onChange={setEditDraft} />
           </div>
-          <DialogFooter className="rounded-b-[28px]" showCloseButton>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
             <Button type="button" onClick={() => void handleUpdateProduct()}>
               Simpan perubahan
             </Button>
@@ -496,14 +496,14 @@ export function InventarisView() {
 
       {/* Restock dialog */}
       <Dialog open={Boolean(restockTarget)} onOpenChange={(open) => !open && setRestockTarget(null)}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="font-heading text-2xl">Restok barang</DialogTitle>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <DialogHeader className="shrink-0 p-5 pb-0">
+            <DialogTitle className="font-heading text-xl">Restok barang</DialogTitle>
             <DialogDescription>
               Tambahkan stok untuk {restockTarget?.name ?? "produk terpilih"}.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 p-6 pt-4">
+          <div className="overflow-y-auto flex-1 space-y-4 p-5 pt-4">
             <div className="rounded-2xl border border-border/70 bg-muted/30 p-4">
               <p className="text-sm text-muted-foreground">Stok sekarang</p>
               <p className="mt-2 font-heading text-3xl font-semibold">
@@ -523,7 +523,7 @@ export function InventarisView() {
               />
             </div>
           </div>
-          <DialogFooter className="rounded-b-[28px]" showCloseButton>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
             <Button type="button" onClick={() => void handleRestock()}>
               Simpan restok
             </Button>

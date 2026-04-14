@@ -425,8 +425,8 @@ export function PengaturanView() {
 
       {/* Reset workspace confirmation */}
       <Dialog open={confirmResetOpen} onOpenChange={setConfirmResetOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
-          <DialogHeader className="p-6 pb-0">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <DialogHeader className="shrink-0 p-5 pb-0">
             <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-destructive/10">
               <AlertTriangle className="size-5 text-destructive" />
             </div>
@@ -436,12 +436,12 @@ export function PengaturanView() {
               Tindakan ini <strong>tidak bisa dibatalkan</strong>.
             </DialogDescription>
           </DialogHeader>
-          <div className="p-6 pt-4">
+          <div className="overflow-y-auto flex-1 p-5 pt-4">
             <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
               Data yang terhapus: produk, riwayat transaksi, buku hutang, dan pengaturan warung.
             </div>
           </div>
-          <DialogFooter className="rounded-b-[28px]" showCloseButton>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
             <Button type="button" variant="outline" onClick={() => setConfirmResetOpen(false)}>
               Batal
             </Button>

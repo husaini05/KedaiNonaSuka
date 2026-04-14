@@ -130,14 +130,14 @@ export function BukuHutangView() {
             <span className="hidden sm:inline">Tambah kasbon</span>
             <span className="sm:hidden">Tambah</span>
           </DialogTrigger>
-          <DialogContent className="w-[calc(100vw-2rem)] max-w-xl rounded-[28px] p-0">
-            <DialogHeader className="p-6 pb-0">
-              <DialogTitle className="font-heading text-2xl">Catat hutang baru</DialogTitle>
+          <DialogContent className="w-[calc(100vw-2rem)] max-w-xl rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+            <DialogHeader className="shrink-0 p-5 pb-0">
+              <DialogTitle className="font-heading text-xl">Catat hutang baru</DialogTitle>
               <DialogDescription>
                 Simpan nama pelanggan, nomor WhatsApp, nominal, dan tanggal jatuh tempo.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 p-6 pt-4">
+            <div className="overflow-y-auto flex-1 grid gap-4 p-5 pt-4">
               <div className="grid gap-2">
                 <Label htmlFor="borrower-name">Nama peminjam</Label>
                 <Input
@@ -184,7 +184,7 @@ export function BukuHutangView() {
                 </div>
               </div>
             </div>
-            <DialogFooter className="rounded-b-[28px]" showCloseButton>
+            <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
               <Button type="button" onClick={() => void handleCreateDebt()}>
                 Simpan kasbon
               </Button>

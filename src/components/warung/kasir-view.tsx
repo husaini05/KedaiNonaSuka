@@ -750,14 +750,14 @@ export function KasirView() {
 
       {/* ── Confirm dialog ────────────────────────────────────────────────── */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="font-heading text-2xl">Konfirmasi Transaksi</DialogTitle>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <DialogHeader className="shrink-0 p-5 pb-0">
+            <DialogTitle className="font-heading text-xl">Konfirmasi Transaksi</DialogTitle>
             <DialogDescription>
               Periksa kembali — stok berkurang dan transaksi tersimpan setelah dikonfirmasi.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 p-6 pt-4">
+          <div className="overflow-y-auto flex-1 space-y-3 p-5 pt-4">
             <div className="rounded-2xl bg-primary/8 border border-primary/20 p-4">
               <p className="text-xs text-muted-foreground">Total tagihan</p>
               <p className="mt-1 font-heading text-3xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
@@ -780,7 +780,7 @@ export function KasirView() {
               </div>
             )}
           </div>
-          <DialogFooter className="rounded-b-[28px]" showCloseButton>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
             <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
               Periksa Lagi
             </Button>
@@ -793,46 +793,48 @@ export function KasirView() {
 
       {/* ── Success dialog ────────────────────────────────────────────────── */}
       <Dialog open={checkoutSuccessOpen} onOpenChange={setCheckoutSuccessOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
-          <div className="p-6 pb-0">
-            {/* Success icon */}
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="size-8 text-green-600" />
-            </div>
-            <p className="text-center font-heading text-2xl font-bold">Transaksi Berhasil!</p>
-            <p className="mt-1.5 text-center text-sm text-muted-foreground">
-              Struk siap dibagikan atau dicetak
-            </p>
-          </div>
-
-          <div className="space-y-3 p-6 pt-4">
-            {/* Total */}
-            <div className="rounded-2xl bg-green-50 border border-green-100 p-5 text-center">
-              <p className="text-xs text-muted-foreground">{paymentLabels[lastTransaction?.paymentMethod ?? "Tunai"]}</p>
-              <p className="mt-1 font-heading text-4xl font-bold text-green-700">
-                {formatCurrency(lastTransaction?.total ?? 0)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                No. {lastTransaction?.id.substring(0, 8)}
-              </p>
-            </div>
-
-            {/* Cash details */}
-            {lastTransaction?.paymentMethod === "Tunai" && lastCashReceived > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-muted/40 p-4 text-center">
-                  <p className="text-xs text-muted-foreground">Diterima</p>
-                  <p className="mt-1 font-heading text-lg font-bold">{formatCurrency(lastCashReceived)}</p>
-                </div>
-                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-center">
-                  <p className="text-xs text-muted-foreground">Kembalian</p>
-                  <p className="mt-1 font-heading text-lg font-bold text-blue-700">{formatCurrency(lastChange)}</p>
-                </div>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <div className="overflow-y-auto flex-1">
+            <div className="p-5 pb-0">
+              {/* Success icon */}
+              <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle2 className="size-7 text-green-600" />
               </div>
-            )}
+              <p className="text-center font-heading text-xl font-bold">Transaksi Berhasil!</p>
+              <p className="mt-1 text-center text-sm text-muted-foreground">
+                Struk siap dibagikan atau dicetak
+              </p>
+            </div>
+
+            <div className="space-y-3 p-5 pt-4">
+              {/* Total */}
+              <div className="rounded-2xl bg-green-50 border border-green-100 p-4 text-center">
+                <p className="text-xs text-muted-foreground">{paymentLabels[lastTransaction?.paymentMethod ?? "Tunai"]}</p>
+                <p className="mt-1 font-heading text-3xl font-bold text-green-700">
+                  {formatCurrency(lastTransaction?.total ?? 0)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  No. {lastTransaction?.id.substring(0, 8)}
+                </p>
+              </div>
+
+              {/* Cash details */}
+              {lastTransaction?.paymentMethod === "Tunai" && lastCashReceived > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-muted/40 p-4 text-center">
+                    <p className="text-xs text-muted-foreground">Diterima</p>
+                    <p className="mt-1 font-heading text-lg font-bold">{formatCurrency(lastCashReceived)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-center">
+                    <p className="text-xs text-muted-foreground">Kembalian</p>
+                    <p className="mt-1 font-heading text-lg font-bold text-blue-700">{formatCurrency(lastChange)}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <DialogFooter className="rounded-b-[28px]" showCloseButton>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
             <Button type="button" variant="outline" onClick={printDetailReceipt}>
               <Printer className="size-4" />
               Cetak Struk
