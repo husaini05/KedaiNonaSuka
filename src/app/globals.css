@@ -159,4 +159,13 @@
     background: rgba(255, 252, 245, 0.75);
     backdrop-filter: blur(20px);
   }
+
+  /* Hide scrollbar on horizontal scroll containers (category pills, etc.) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
