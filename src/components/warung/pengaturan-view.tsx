@@ -1,11 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BadgeCheck, Bell, MapPin, RotateCcw, Store, WalletCards } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Bell, MapPin, RotateCcw, Store, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +28,7 @@ export function PengaturanView() {
   const [form, setForm] = useState<Settings>(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
   useEffect(() => {
     setForm(settings);
@@ -181,6 +190,8 @@ export function PengaturanView() {
                 <Label htmlFor="owner-whatsapp">No. WhatsApp pemilik</Label>
                 <Input
                   id="owner-whatsapp"
+                  type="tel"
+                  inputMode="tel"
                   value={form.ownerWhatsapp}
                   onChange={(event) => updateField("ownerWhatsapp", event.target.value)}
                   className="h-11 rounded-2xl"
@@ -211,6 +222,7 @@ export function PengaturanView() {
             <div className="mt-4 grid gap-2 sm:grid-cols-[160px_1fr] sm:items-center">
               <Input
                 type="number"
+                inputMode="numeric"
                 min={1}
                 value={form.stockAlertThreshold}
                 onChange={(event) => {
@@ -279,8 +291,8 @@ export function PengaturanView() {
               type="button"
               size="lg"
               variant="outline"
-              className="rounded-2xl"
-              onClick={() => void handleWorkspaceReset()}
+              className="rounded-2xl border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive"
+              onClick={() => setConfirmResetOpen(true)}
               disabled={isResetting}
             >
               <RotateCcw className="size-4" />
@@ -373,6 +385,47 @@ export function PengaturanView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reset workspace confirmation */}
+      <Dialog open={confirmResetOpen} onOpenChange={setConfirmResetOpen}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="size-5 text-destructive" />
+            </div>
+            <DialogTitle className="font-heading text-2xl">Reset workspace?</DialogTitle>
+            <DialogDescription className="mt-1 leading-relaxed">
+              Semua data produk, transaksi, hutang, dan pengaturan akan dikembalikan ke kondisi awal demo.
+              Tindakan ini <strong>tidak bisa dibatalkan</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6 pt-4">
+            <div className="rounded-[20px] border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              Data yang terhapus: produk, riwayat transaksi, buku hutang, dan pengaturan warung.
+            </div>
+          </div>
+          <DialogFooter className="rounded-b-[28px]" showCloseButton>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmResetOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                setConfirmResetOpen(false);
+                void handleWorkspaceReset();
+              }}
+            >
+              <RotateCcw className="size-4" />
+              Ya, Reset Sekarang
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

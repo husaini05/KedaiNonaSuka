@@ -145,7 +145,7 @@ export function LaporanView() {
             <div class="report-container">
               <div class="header">
                 <div>
-                  <div style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.22em; color: #ea580c;">Warung OS report</div>
+                  <div style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.22em; color: #ea580c;">Laporan Operasional</div>
                   <h1 class="store-name">${storeName}</h1>
                   <p style="margin: 8px 0; color: #666; font-size: 14px;">
                     ${[storeTagline, city].filter(Boolean).join(" • ")}
@@ -187,7 +187,7 @@ export function LaporanView() {
                 <ul style="list-style: none; padding: 0; margin: 0;">
                   <li class="note-item">Laba bersih periode ${rangeLabel.toLowerCase()} tercatat ${formatCurrency(summary.netProfit)}.</li>
                   <li class="note-item">Produk paling sering bergerak: ${topVelocity.map((item) => item.name).join(", ")}.</li>
-                  <li class="note-item">Total transaksi: ${summary.transactionCount} transaksi dengan rata-rata tiket ${formatCurrency(summary.averageTicket)}.</li>
+                  <li class="note-item">Total ${summary.transactionCount} transaksi dengan rata-rata tiket ${formatCurrency(summary.averageTicket)} per transaksi.</li>
                 </ul>
               </div>
               
@@ -287,23 +287,25 @@ export function LaporanView() {
                 </div>
               </div>
 
-              <div className="mt-6 flex h-52 items-end gap-3">
+              <div className="mt-6 flex h-60 items-end gap-2">
                 {series.map((item) => (
-                  <div key={item.label} className="flex flex-1 flex-col items-center gap-3">
+                  <div key={item.label} className="flex flex-1 flex-col items-center gap-1.5">
+                    {/* Value label above bar */}
+                    <p className="text-[10px] font-bold text-primary leading-none">
+                      {item.revenue > 0 ? formatCompactCurrency(item.revenue) : ""}
+                    </p>
+                    {/* Bar */}
                     <div className="flex w-full flex-1 items-end">
                       <div
-                        className="w-full rounded-t-[18px] bg-gradient-to-t from-primary to-chart-3 shadow-[0_18px_28px_-18px_rgba(186,92,35,0.8)]"
+                        className="w-full rounded-t-[14px] bg-gradient-to-t from-primary to-chart-3 shadow-[0_12px_24px_-14px_rgba(186,92,35,0.75)] transition-all duration-500"
                         style={{
-                          height: `${Math.max(14, (item.revenue / highestValue) * 100)}%`,
+                          height: `${Math.max(8, (item.revenue / highestValue) * 100)}%`,
+                          opacity: item.revenue === 0 ? 0.25 : 1,
                         }}
                       />
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs font-medium text-foreground">{item.label}</p>
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        {formatCompactCurrency(item.revenue)}
-                      </p>
-                    </div>
+                    {/* Label below */}
+                    <p className="text-[11px] font-medium text-foreground leading-none">{item.label}</p>
                   </div>
                 ))}
               </div>
@@ -340,7 +342,7 @@ export function LaporanView() {
             <div>
               <CardTitle className="font-heading text-2xl">Preview laporan PDF</CardTitle>
               <CardDescription>
-                Layout ini sengaja dibuat printable, tapi tombol ekspor masih demo frontend.
+                Klik "Cetak PDF" untuk membuka dialog print browser — pilih "Save as PDF" untuk menyimpan.
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -367,7 +369,7 @@ export function LaporanView() {
             <div className="rounded-[30px] bg-[#fffaf5] p-6 shadow-inner ring-1 ring-border/80">
               <div className="flex items-start justify-between gap-4 border-b border-dashed border-border/80 pb-5">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.22em] text-primary">Warung OS report</p>
+                  <p className="text-sm uppercase tracking-[0.22em] text-primary">Laporan operasional</p>
                   <h3 className="mt-2 font-heading text-3xl font-semibold">{settings.storeName}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {[settings.storeTagline, settings.city].filter(Boolean).join(" • ")}
@@ -411,10 +413,10 @@ export function LaporanView() {
                     Laba bersih periode {rangeLabel.toLowerCase()} tercatat {formatCurrency(summary.netProfit)}.
                   </li>
                   <li className="rounded-[18px] bg-white px-4 py-3 ring-1 ring-border/70">
-                    Produk paling sering bergerak: {topVelocity.map((item) => item.name).join(", ")}.
+                    Produk paling sering bergerak: {topVelocity.length > 0 ? topVelocity.map((item) => item.name).join(", ") : "Belum ada data transaksi."}.
                   </li>
                   <li className="rounded-[18px] bg-white px-4 py-3 ring-1 ring-border/70">
-                    Data ini masih mock frontend, namun layout dan struktur metrik sudah siap dipakai saat API aktif.
+                    Total {summary.transactionCount} transaksi dengan rata-rata tiket {formatCurrency(summary.averageTicket)} per transaksi.
                   </li>
                 </ul>
               </div>
