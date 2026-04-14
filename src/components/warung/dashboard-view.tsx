@@ -41,10 +41,30 @@ export function DashboardView() {
     );
   }
 
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
   const todayTransactions = transactions.filter((t) => {
-    return new Date(t.createdAt).toDateString() === new Date().toDateString();
+    return new Date(t.createdAt).toDateString() === today.toDateString();
   });
   const todaySales = todayTransactions.reduce((sum, t) => sum + t.total, 0);
+
+  const yesterdaySales = transactions
+    .filter((t) => new Date(t.createdAt).toDateString() === yesterday.toDateString())
+    .reduce((sum, t) => sum + t.total, 0);
+
+  const trendPct =
+    yesterdaySales > 0
+      ? Math.round(((todaySales - yesterdaySales) / yesterdaySales) * 100)
+      : null;
+
+  const todayLabel = today.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
   const outstandingDebt = debts.filter((d) => !d.isPaid).reduce((sum, d) => sum + d.amount, 0);
   const latestTransaction = transactions[0] ?? null;
   const latestDebts = debts.filter((d) => !d.isPaid).slice(0, 4);
@@ -55,10 +75,26 @@ export function DashboardView() {
     <div className="space-y-4">
       {/* ── Greeting banner ── */}
       <div className="rounded-2xl bg-primary px-5 py-4 shadow-sm">
-        <p className="text-primary-foreground/80 text-sm font-medium">
-          {getGreeting()}, {ownerFirstName} 👋
-        </p>
-        <p className="mt-1 font-heading text-xl font-bold text-primary-foreground leading-tight">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-primary-foreground/70 text-xs font-medium">{todayLabel}</p>
+            <p className="mt-0.5 text-primary-foreground/90 text-sm font-medium">
+              {getGreeting()}, {ownerFirstName} 👋
+            </p>
+          </div>
+          {trendPct !== null && (
+            <div
+              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
+                trendPct >= 0
+                  ? "bg-green-500/25 text-green-100"
+                  : "bg-red-500/25 text-red-100"
+              }`}
+            >
+              {trendPct >= 0 ? "▲" : "▼"} {Math.abs(trendPct)}% vs kemarin
+            </div>
+          )}
+        </div>
+        <p className="mt-2 font-heading text-xl font-bold text-primary-foreground leading-tight">
           {settings.storeName}
         </p>
         <div className="mt-3 flex items-center gap-1.5">

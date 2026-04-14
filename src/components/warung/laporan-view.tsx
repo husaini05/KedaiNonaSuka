@@ -1,19 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, CreditCard, Download, Printer, Sparkles, TrendingUp } from "lucide-react";
+import { BarChart3, CreditCard, Download, Plus, Printer, Sparkles, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCompactCurrency, formatCurrency, formatDate } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { buildSeries, estimateProductVelocity, ReportRange, summarizeReport } from "@/lib/reporting";
+import { ExpenseDraft } from "@/lib/types";
+
+const emptyExpenseDraft: ExpenseDraft = {
+  title: "",
+  amount: 0,
+  category: "Operasional",
+};
 
 export function LaporanView() {
-  const { isLoading, transactions, expenses, products, settings } = useAppState();
+  const { isLoading, transactions, expenses, products, settings, addExpense } = useAppState();
   const [range, setRange] = useState<ReportRange>("harian");
+  const [expenseOpen, setExpenseOpen] = useState(false);
+  const [expenseDraft, setExpenseDraft] = useState<ExpenseDraft>(emptyExpenseDraft);
+
+  async function handleAddExpense() {
+    try {
+      if (!expenseDraft.title.trim()) {
+        toast.error("Judul pengeluaran tidak boleh kosong.");
+        return;
+      }
+      if (expenseDraft.amount <= 0) {
+        toast.error("Nominal pengeluaran harus lebih dari 0.");
+        return;
+      }
+      await addExpense(expenseDraft);
+      setExpenseOpen(false);
+      setExpenseDraft(emptyExpenseDraft);
+      toast.success("Pengeluaran berhasil dicatat.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan pengeluaran.");
+    }
+  }
 
   const summary = summarizeReport(range, transactions, expenses);
   const series = buildSeries(range, transactions);
@@ -188,40 +228,50 @@ export function LaporanView() {
                 </div>
               </div>
 
-              <div className="relative mt-6 h-60">
-                {/* Horizontal grid lines */}
-                {[25, 50, 75].map((pct) => (
-                  <div
-                    key={pct}
-                    className="pointer-events-none absolute inset-x-0 border-t border-border/40"
-                    style={{ bottom: `${pct}%` }}
-                  >
-                    <span className="absolute -top-3.5 right-0 text-[11px] text-muted-foreground/50">
-                      {formatCompactCurrency((highestValue * pct) / 100)}
-                    </span>
-                  </div>
-                ))}
-                {/* Bars */}
-                <div className="absolute inset-0 flex items-end gap-2">
-                  {series.map((item) => (
-                    <div key={item.label} className="flex flex-1 flex-col items-center gap-1.5">
-                      <p className="font-mono text-[11px] font-bold text-primary leading-none">
-                        {item.revenue > 0 ? formatCompactCurrency(item.revenue) : ""}
-                      </p>
-                      <div className="flex w-full flex-1 items-end">
-                        <div
-                          className="w-full rounded-t-[14px] bg-gradient-to-t from-primary to-chart-3 shadow-[0_12px_24px_-14px_rgba(186,92,35,0.75)] transition-all duration-500"
-                          style={{
-                            height: `${Math.max(8, (item.revenue / highestValue) * 100)}%`,
-                            opacity: item.revenue === 0 ? 0.25 : 1,
-                          }}
-                        />
-                      </div>
-                      <p className="text-[11px] font-medium text-foreground leading-none">{item.label}</p>
+              {series.every((s) => s.revenue === 0) ? (
+                <div className="mt-6 flex h-60 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 text-center">
+                  <BarChart3 className="size-10 text-muted-foreground/25" />
+                  <p className="mt-3 text-sm font-semibold text-muted-foreground">Belum ada data penjualan</p>
+                  <p className="mt-1 text-xs text-muted-foreground/70">
+                    Mulai catat transaksi di kasir untuk melihat grafik omzet.
+                  </p>
+                </div>
+              ) : (
+                <div className="relative mt-6 h-60">
+                  {/* Horizontal grid lines */}
+                  {[25, 50, 75].map((pct) => (
+                    <div
+                      key={pct}
+                      className="pointer-events-none absolute inset-x-0 border-t border-border/40"
+                      style={{ bottom: `${pct}%` }}
+                    >
+                      <span className="absolute -top-3.5 right-0 text-[11px] text-muted-foreground/50">
+                        {formatCompactCurrency((highestValue * pct) / 100)}
+                      </span>
                     </div>
                   ))}
+                  {/* Bars */}
+                  <div className="absolute inset-0 flex items-end gap-2">
+                    {series.map((item) => (
+                      <div key={item.label} className="flex flex-1 flex-col items-center gap-1.5">
+                        <p className="font-mono text-[11px] font-bold text-primary leading-none">
+                          {item.revenue > 0 ? formatCompactCurrency(item.revenue) : ""}
+                        </p>
+                        <div className="flex w-full flex-1 items-end">
+                          <div
+                            className="w-full rounded-t-[14px] bg-gradient-to-t from-primary to-chart-3 shadow-[0_12px_24px_-14px_rgba(186,92,35,0.75)] transition-all duration-500"
+                            style={{
+                              height: `${Math.max(8, (item.revenue / highestValue) * 100)}%`,
+                              opacity: item.revenue === 0 ? 0.25 : 1,
+                            }}
+                          />
+                        </div>
+                        <p className="text-[11px] font-medium text-foreground leading-none">{item.label}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
@@ -328,6 +378,114 @@ export function LaporanView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Pengeluaran ── */}
+      <Card className="border-border/60 bg-white shadow-sm">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="font-heading text-xl">Catat Pengeluaran</CardTitle>
+            <CardDescription>
+              Operasional, belanja bahan, atau utilitas — semua tercatat untuk laporan laba bersih yang akurat.
+            </CardDescription>
+          </div>
+          <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
+            <DialogTrigger render={<Button size="lg" className="h-11 rounded-2xl shrink-0" />}>
+              <Plus className="size-4" />
+              Tambah pengeluaran
+            </DialogTrigger>
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-[28px] p-0 flex flex-col overflow-hidden">
+              <DialogHeader className="shrink-0 p-5 pb-0">
+                <DialogTitle className="font-heading text-xl">Catat pengeluaran baru</DialogTitle>
+                <DialogDescription>
+                  Simpan pengeluaran untuk menghitung laba bersih yang akurat.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="overflow-y-auto flex-1 grid gap-4 p-5 pt-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="expense-title">Keterangan</Label>
+                  <Input
+                    id="expense-title"
+                    value={expenseDraft.title}
+                    onChange={(e) => setExpenseDraft({ ...expenseDraft, title: e.target.value })}
+                    placeholder="Contoh: Beli minyak goreng, bayar listrik"
+                    className="h-11 rounded-2xl"
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="expense-amount">Nominal (Rp)</Label>
+                    <Input
+                      id="expense-amount"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      value={expenseDraft.amount || ""}
+                      onChange={(e) => setExpenseDraft({ ...expenseDraft, amount: Number(e.target.value) })}
+                      className="h-11 rounded-2xl"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Kategori</Label>
+                    <Select
+                      value={expenseDraft.category}
+                      onValueChange={(v) => setExpenseDraft({ ...expenseDraft, category: v as ExpenseDraft["category"] })}
+                    >
+                      <SelectTrigger className="h-11 rounded-2xl bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Operasional">Operasional</SelectItem>
+                        <SelectItem value="Belanja">Belanja</SelectItem>
+                        <SelectItem value="Utilitas">Utilitas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
+                <Button type="button" onClick={() => void handleAddExpense()}>
+                  Simpan pengeluaran
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          {expenses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-8 text-center">
+              <CreditCard className="size-10 text-muted-foreground/25" />
+              <p className="mt-3 text-sm font-semibold text-muted-foreground">Belum ada pengeluaran</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Tap &ldquo;Tambah pengeluaran&rdquo; untuk mulai mencatat biaya operasional.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {expenses.slice(0, 10).map((expense) => (
+                <div
+                  key={expense.id}
+                  className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{expense.title}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {expense.category} · {formatDateTime(expense.createdAt)}
+                    </p>
+                  </div>
+                  <p className="ml-3 shrink-0 font-mono text-sm font-bold text-foreground">
+                    {formatCurrency(expense.amount)}
+                  </p>
+                </div>
+              ))}
+              {expenses.length > 10 && (
+                <p className="pt-1 text-center text-xs text-muted-foreground">
+                  +{expenses.length - 10} pengeluaran lainnya
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

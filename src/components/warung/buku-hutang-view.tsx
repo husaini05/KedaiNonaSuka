@@ -56,17 +56,22 @@ export function BukuHutangView() {
     );
   }
 
-  const filteredDebts = debts.filter((debt) => {
-    const keyword = query.toLowerCase();
-    const matchesKeyword =
-      debt.borrowerName.toLowerCase().includes(keyword) ||
-      debt.whatsapp.includes(keyword);
-    const matchesStatus =
-      status === "semua" ||
-      (status === "belum" && !debt.isPaid) ||
-      (status === "lunas" && debt.isPaid);
-    return matchesKeyword && matchesStatus;
-  });
+  const filteredDebts = debts
+    .filter((debt) => {
+      const keyword = query.toLowerCase();
+      const matchesKeyword =
+        debt.borrowerName.toLowerCase().includes(keyword) ||
+        debt.whatsapp.includes(keyword);
+      const matchesStatus =
+        status === "semua" ||
+        (status === "belum" && !debt.isPaid) ||
+        (status === "lunas" && debt.isPaid);
+      return matchesKeyword && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (a.isPaid !== b.isPaid) return a.isPaid ? 1 : -1;
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    });
 
   const outstandingTotal = debts.filter((d) => !d.isPaid).reduce((sum, d) => sum + d.amount, 0);
   const paidCount = debts.filter((d) => d.isPaid).length;

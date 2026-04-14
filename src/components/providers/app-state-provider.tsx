@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { emptyAppState } from "@/lib/empty-state";
-import { AppState, Debt, DebtDraft, PaymentMethod, Product, ProductDraft, Settings, Transaction } from "@/lib/types";
+import { AppState, Debt, DebtDraft, Expense, ExpenseDraft, PaymentMethod, Product, ProductDraft, Settings, Transaction } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
 
 type CartLine = {
@@ -33,6 +33,7 @@ type AppStateContextValue = AppState & {
   addDebt: (draft: DebtDraft) => Promise<void>;
   markDebtPaid: (debtId: string) => Promise<void>;
   sendDebtReminder: (debtId: string) => Promise<Debt | null>;
+  addExpense: (draft: ExpenseDraft) => Promise<void>;
   updateSettings: (settings: Settings) => Promise<void>;
   resetWorkspace: () => Promise<void>;
 };
@@ -295,6 +296,17 @@ export function AppStateProvider({
     }));
   }, []);
 
+  const addExpense = useCallback(async (draft: ExpenseDraft) => {
+    const response = await requestJson<{ expense: Expense }>("/api/expenses", {
+      method: "POST",
+      body: JSON.stringify(draft),
+    });
+    setState((current) => ({
+      ...current,
+      expenses: [response.expense, ...current.expenses],
+    }));
+  }, []);
+
   const sendDebtReminder = useCallback(async (debtId: string) => {
     // Open WhatsApp BEFORE the API call so the browser doesn't block the popup
     const debt = stateRef.current.debts.find((d) => d.id === debtId);
@@ -367,6 +379,7 @@ export function AppStateProvider({
       addDebt,
       markDebtPaid,
       sendDebtReminder,
+      addExpense,
       updateSettings,
       resetWorkspace,
     }),

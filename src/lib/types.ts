@@ -99,3 +99,9 @@ export interface DebtDraft {
   amount: number;
   dueDate: string;
 }
+
+export interface ExpenseDraft {
+  title: string;
+  amount: number;
+  category: "Operasional" | "Belanja" | "Utilitas";
+}

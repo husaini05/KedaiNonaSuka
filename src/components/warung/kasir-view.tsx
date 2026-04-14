@@ -72,7 +72,12 @@ function vibrate(ms = 30) {
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
-function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
+function getQuickAmounts(total: number): number[] {
+  const denominations = [5000, 10000, 20000, 50000, 100000, 200000, 500000];
+  return denominations.filter((d) => d >= total).slice(0, 3);
+}
+
+function ProductCard({ product, onAdd, isAnimating = false }: { product: Product; onAdd: () => void; isAnimating?: boolean }) {
   const lowStock = product.stock <= product.minimumStock && product.stock > 0;
   const outOfStock = product.stock <= 0;
   const emoji = categoryEmoji[product.category] ?? "🏪";
@@ -125,7 +130,10 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
           {formatCurrency(product.sellPrice)}
         </p>
         {!outOfStock && (
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_12px_-4px_rgba(232,130,26,0.5)] transition-all duration-150 group-active:scale-90 group-hover:shadow-[0_8px_16px_-4px_rgba(232,130,26,0.45)]">
+          <div className={cn(
+            "flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_12px_-4px_rgba(232,130,26,0.5)] transition-all duration-150 group-active:scale-90 group-hover:shadow-[0_8px_16px_-4px_rgba(232,130,26,0.45)]",
+            isAnimating && "animate-bounce"
+          )}>
             <Plus className="size-4" />
           </div>
         )}
@@ -183,6 +191,8 @@ export function KasirView() {
   const [cashReceived, setCashReceived] = useState("");
   const [lastCashReceived, setLastCashReceived] = useState(0);
   const [lastChange, setLastChange] = useState(0);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [animatingIds, setAnimatingIds] = useState<Set<string>>(new Set());
 
   const cashReceivedNum = cashReceived ? parseFloat(cashReceived.replace(/[^0-9]/g, "")) || 0 : 0;
   const change = cashReceivedNum - cartTotal;
@@ -282,6 +292,7 @@ export function KasirView() {
   }
 
   async function handleCheckoutNow() {
+    setIsCheckingOut(true);
     try {
       const transaction = await checkout();
       if (!transaction) { toast.error("Keranjang masih kosong."); return; }
@@ -316,6 +327,8 @@ export function KasirView() {
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Gagal menyimpan transaksi.");
+    } finally {
+      setIsCheckingOut(false);
     }
   }
 
@@ -452,6 +465,28 @@ export function KasirView() {
                 autoComplete="off"
               />
             </div>
+            {/* Quick cash amount buttons */}
+            {cartTotal > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {getQuickAmounts(cartTotal).map((amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() => setCashReceived(amount.toLocaleString("id-ID"))}
+                    className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground transition-all active:scale-95 hover:bg-primary/10 hover:text-primary"
+                  >
+                    Rp {(amount / 1000).toFixed(0)}rb
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCashReceived(cartTotal.toLocaleString("id-ID"))}
+                  className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-all active:scale-95 hover:bg-primary/20"
+                >
+                  Pas
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -681,9 +716,18 @@ export function KasirView() {
                 <ProductCard
                   key={product.id}
                   product={product}
+                  isAnimating={animatingIds.has(product.id)}
                   onAdd={() => {
                     addToCart(product.id);
                     vibrate(30);
+                    setAnimatingIds((prev) => new Set([...prev, product.id]));
+                    setTimeout(() => {
+                      setAnimatingIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(product.id);
+                        return next;
+                      });
+                    }, 400);
                     toast.success(`${product.name} ditambahkan`, {
                       description: formatCurrency(product.sellPrice),
                     });
@@ -809,11 +853,18 @@ export function KasirView() {
             )}
           </div>
           <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
-            <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)} disabled={isCheckingOut}>
               Periksa Lagi
             </Button>
-            <Button type="button" onClick={() => void handleCheckoutNow()}>
-              Ya, Konfirmasi
+            <Button type="button" onClick={() => void handleCheckoutNow()} disabled={isCheckingOut}>
+              {isCheckingOut ? (
+                <span className="flex items-center gap-2">
+                  <span className="size-4 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
+                  Memproses...
+                </span>
+              ) : (
+                "Ya, Konfirmasi"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

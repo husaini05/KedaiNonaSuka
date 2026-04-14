@@ -172,14 +172,16 @@ export function InventarisView() {
     );
   }
 
-  const filteredProducts = products.filter((product) => {
-    const keyword = query.toLowerCase();
-    return (
-      product.name.toLowerCase().includes(keyword) ||
-      product.category.toLowerCase().includes(keyword) ||
-      product.description.toLowerCase().includes(keyword)
-    );
-  });
+  const filteredProducts = products
+    .filter((product) => {
+      const keyword = query.toLowerCase();
+      return (
+        product.name.toLowerCase().includes(keyword) ||
+        product.category.toLowerCase().includes(keyword) ||
+        product.description.toLowerCase().includes(keyword)
+      );
+    })
+    .sort((a, b) => a.stock - b.stock);
 
   const totalInventoryValue = products.reduce(
     (sum, product) => sum + product.buyPrice * product.stock,

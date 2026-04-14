@@ -9,7 +9,6 @@ import {
   Package2,
   Settings2,
   ShoppingBasket,
-  Wallet,
 } from "lucide-react";
 import { AccountPanel } from "@/components/auth/account-panel";
 import { BottomNav } from "@/components/bottom-nav";
@@ -147,7 +146,7 @@ export function AppShell({
         </aside>
 
         {/* Main content */}
-        <main className="min-w-0 flex-1 pb-20 lg:ml-[292px] lg:pb-0">
+        <main key={pathname} className="min-w-0 flex-1 pb-20 lg:ml-[292px] lg:pb-0 animate-page-enter">
           {/* Desktop-only page header */}
           <div className="mb-6 hidden lg:block">
             <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">

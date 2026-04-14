@@ -169,4 +169,20 @@
   .section-title {
     @apply text-base font-heading font-bold text-foreground;
   }
+
+  /* Page transition */
+  .animate-page-enter {
+    animation: pageEnter 0.18s ease-out both;
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

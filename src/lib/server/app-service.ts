@@ -10,7 +10,7 @@ import {
   transactions,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { AppState, DebtDraft, PaymentMethod, ProductDraft, Settings, Transaction } from "@/lib/types";
+import { AppState, DebtDraft, ExpenseDraft, PaymentMethod, ProductDraft, Settings, Transaction } from "@/lib/types";
 
 let initializationPromise: Promise<void> | null = null;
 const supportedPaymentMethods: PaymentMethod[] = ["Tunai", "QRIS", "Transfer"];
@@ -585,6 +585,35 @@ export async function remindDebt(userId: string, debtId: string) {
     dueDate: updated.dueDate,
     isPaid: updated.isPaid === 1,
     lastReminderAt: updated.lastReminderAt ?? undefined,
+  };
+}
+
+export async function createExpense(userId: string, draft: ExpenseDraft) {
+  if (!draft.title?.trim()) {
+    throw new Error("Judul pengeluaran tidak boleh kosong.");
+  }
+  if (!draft.amount || draft.amount <= 0) {
+    throw new Error("Nominal pengeluaran harus lebih dari 0.");
+  }
+
+  const [expense] = await db
+    .insert(expenses)
+    .values({
+      id: createId("exp"),
+      userId,
+      title: draft.title.trim(),
+      amount: Math.round(draft.amount),
+      createdAt: nowIso(),
+      category: draft.category,
+    })
+    .returning();
+
+  return {
+    id: expense.id,
+    title: expense.title,
+    amount: expense.amount,
+    createdAt: expense.createdAt,
+    category: expense.category as AppState["expenses"][number]["category"],
   };
 }
 
