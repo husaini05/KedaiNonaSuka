@@ -176,6 +176,11 @@
   }
 }
 
+/* Prevent any rounding-pixel overflow from expanding the Android layout viewport */
+html {
+  overflow-x: clip;
+}
+
 @keyframes pageEnter {
   from {
     opacity: 0;
