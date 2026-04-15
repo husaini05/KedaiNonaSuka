@@ -189,6 +189,9 @@ async function ensureTables() {
           ADD CONSTRAINT chk_products_stock_nonneg CHECK (stock >= 0);
       END IF;
     END $$;
+
+    -- Rename category: Minuman → Frozen Food (idempotent)
+    UPDATE products SET category = 'Frozen Food' WHERE category = 'Minuman';
   `);
 }
 

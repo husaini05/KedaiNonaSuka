@@ -152,11 +152,11 @@ const products: Product[] = [
     description: "Jus jambu biji merah segar, kaya vitamin C dan antioksidan.",
   },
 
-  // ── Minuman ───────────────────────────────────────────────────
+  // ── Frozen Food ──────────────────────────────────────────────
   {
     id: "prd_es_teh",
     name: "Es Teh Manis",
-    category: "Minuman",
+    category: "Frozen Food",
     buyPrice: 1500,
     sellPrice: 4000,
     stock: 50,
@@ -166,7 +166,7 @@ const products: Product[] = [
   {
     id: "prd_es_jeruk",
     name: "Es Jeruk",
-    category: "Minuman",
+    category: "Frozen Food",
     buyPrice: 2500,
     sellPrice: 5000,
     stock: 30,
@@ -176,7 +176,7 @@ const products: Product[] = [
   {
     id: "prd_kopi_hitam",
     name: "Kopi Hitam",
-    category: "Minuman",
+    category: "Frozen Food",
     buyPrice: 1500,
     sellPrice: 4000,
     stock: 40,
@@ -186,7 +186,7 @@ const products: Product[] = [
   {
     id: "prd_kopi_susu",
     name: "Kopi Susu Panas",
-    category: "Minuman",
+    category: "Frozen Food",
     buyPrice: 3000,
     sellPrice: 6000,
     stock: 30,
@@ -196,7 +196,7 @@ const products: Product[] = [
   {
     id: "prd_air_mineral",
     name: "Air Mineral 600ml",
-    category: "Minuman",
+    category: "Frozen Food",
     buyPrice: 2500,
     sellPrice: 4000,
     stock: 16,
@@ -206,7 +206,7 @@ const products: Product[] = [
   {
     id: "prd_teh_botol",
     name: "Teh Botol",
-    category: "Minuman",
+    category: "Frozen Food",
     buyPrice: 4200,
     sellPrice: 6000,
     stock: 20,

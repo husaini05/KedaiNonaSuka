@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const PRODUCT_CATEGORIES = [
   "Makanan",
-  "Minuman",
+  "Frozen Food",
   "Jus Segar",
   "Sembako",
   "Kebutuhan Harian",

@@ -75,7 +75,7 @@ function ProductForm({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Makanan">Makanan</SelectItem>
-              <SelectItem value="Minuman">Minuman</SelectItem>
+              <SelectItem value="Frozen Food">Frozen Food</SelectItem>
               <SelectItem value="Jus Segar">Jus Segar</SelectItem>
               <SelectItem value="Sembako">Sembako</SelectItem>
               <SelectItem value="Kebutuhan Harian">Kebutuhan Harian</SelectItem>

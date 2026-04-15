@@ -44,7 +44,7 @@ const categoryLabels: Array<{ value: "Semua" | ProductCategory; label: string; e
   { value: "Semua",            label: "Semua",   emoji: "🏪" },
   { value: "Makanan",          label: "Makanan", emoji: "🍽️" },
   { value: "Jus Segar",        label: "Jus",     emoji: "🥤" },
-  { value: "Minuman",          label: "Minum",   emoji: "☕" },
+  { value: "Frozen Food",      label: "Frozen",  emoji: "🧊" },
   { value: "Sembako",          label: "Sembako", emoji: "🛒" },
   { value: "Kebutuhan Harian", label: "Harian",  emoji: "✨" },
 ];
@@ -52,7 +52,7 @@ const categoryLabels: Array<{ value: "Semua" | ProductCategory; label: string; e
 const categoryEmoji: Record<string, string> = {
   Makanan: "🍽️",
   "Jus Segar": "🥤",
-  Minuman: "☕",
+  "Frozen Food": "🧊",
   Sembako: "🛒",
   "Kebutuhan Harian": "✨",
 };
@@ -60,7 +60,7 @@ const categoryEmoji: Record<string, string> = {
 const categoryBg: Record<string, string> = {
   Makanan: "bg-orange-50",
   "Jus Segar": "bg-green-50",
-  Minuman: "bg-blue-50",
+  "Frozen Food": "bg-cyan-50",
   Sembako: "bg-yellow-50",
   "Kebutuhan Harian": "bg-purple-50",
 };

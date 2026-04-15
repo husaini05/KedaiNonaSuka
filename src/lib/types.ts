@@ -2,7 +2,7 @@ export type PaymentMethod = "Tunai" | "QRIS" | "Transfer";
 
 export type ProductCategory =
   | "Makanan"
-  | "Minuman"
+  | "Frozen Food"
   | "Jus Segar"
   | "Sembako"
   | "Kebutuhan Harian";
