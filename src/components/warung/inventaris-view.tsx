@@ -59,6 +59,7 @@ function ProductForm({
           onChange={(event) => onChange({ ...draft, name: event.target.value })}
           placeholder="Contoh: Mi Instan Goreng"
           className="h-11 rounded-2xl"
+          autoComplete="off"
         />
       </div>
 
@@ -75,6 +76,7 @@ function ProductForm({
             <SelectContent>
               <SelectItem value="Makanan">Makanan</SelectItem>
               <SelectItem value="Minuman">Minuman</SelectItem>
+              <SelectItem value="Jus Segar">Jus Segar</SelectItem>
               <SelectItem value="Sembako">Sembako</SelectItem>
               <SelectItem value="Kebutuhan Harian">Kebutuhan Harian</SelectItem>
             </SelectContent>

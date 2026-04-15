@@ -191,6 +191,7 @@ export function BukuHutangView() {
                   value={draft.borrowerName}
                   onChange={(event) => setDraft({ ...draft, borrowerName: event.target.value })}
                   className="h-11 rounded-2xl"
+                  autoComplete="name"
                 />
               </div>
               <div className="grid gap-2">

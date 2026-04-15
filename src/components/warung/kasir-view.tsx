@@ -170,21 +170,21 @@ const CartItemsList = memo(function CartItemsList({ cartLines, updateCartQuantit
           </div>
           <div className="flex items-center gap-1 rounded-full bg-white px-1 py-0.5 shadow-sm">
             <button type="button" onClick={() => updateCartQuantity(line.product.id, line.quantity - 1)}
-              className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90" aria-label="Kurangi">
-              <Minus className="size-3" />
+              className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90" aria-label="Kurangi">
+              <Minus className="size-3.5" />
             </button>
             <span className="min-w-[1.5rem] text-center text-sm font-bold">{line.quantity}</span>
             <button type="button" onClick={() => updateCartQuantity(line.product.id, line.quantity + 1)}
-              className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90" aria-label="Tambah">
-              <Plus className="size-3" />
+              className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90" aria-label="Tambah">
+              <Plus className="size-3.5" />
             </button>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <p className="text-sm font-bold text-foreground">{formatCurrency(line.lineTotal)}</p>
             <button type="button" onClick={() => removeFromCart(line.product.id)}
-              className="flex size-5 items-center justify-center rounded-full text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
+              className="-mr-1 flex size-7 items-center justify-center rounded-full text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive active:scale-90 transition"
               aria-label={`Hapus ${line.product.name}`}>
-              <X className="size-3" />
+              <X className="size-3.5" />
             </button>
           </div>
         </div>
@@ -205,6 +205,8 @@ type PaymentSectionProps = {
   cashReceivedNum: number;
   change: number;
   cartTotal: number;
+  /** Called when user presses Enter inside the cash amount field */
+  onConfirm?: () => void;
 };
 
 function PaymentSection({
@@ -217,6 +219,7 @@ function PaymentSection({
   cashReceivedNum,
   change,
   cartTotal,
+  onConfirm,
 }: PaymentSectionProps) {
   return (
     <div className="space-y-3">
@@ -280,6 +283,10 @@ function PaymentSection({
                 const v = e.target.value.replace(/[^0-9]/g, "");
                 setCashReceived(v ? parseInt(v).toLocaleString("id-ID") : "");
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && onConfirm) onConfirm();
+              }}
+              onFocus={(e) => e.target.select()}
               placeholder="0"
               className="h-12 rounded-2xl pl-10 text-lg font-bold"
               autoComplete="off"
@@ -575,6 +582,7 @@ export function KasirView() {
                 cashReceivedNum={cashReceivedNum}
                 change={change}
                 cartTotal={cartTotal}
+                onConfirm={handleCheckoutConfirm}
               />
 
               {/* Total + CTA */}
@@ -774,7 +782,22 @@ export function KasirView() {
           ) : null}
 
           {/* Product grid */}
-          {filteredProducts.length > 0 ? (
+          {products.length === 0 ? (
+            /* No products at all — guide user to inventory */
+            <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 text-center shadow-sm">
+              <ShoppingBasket className="size-12 text-muted-foreground/25" />
+              <p className="mt-4 font-heading text-lg font-semibold">Belum ada produk</p>
+              <p className="mt-1.5 max-w-[240px] text-sm text-muted-foreground">
+                Tambahkan produk di menu Inventaris agar bisa mulai berjualan.
+              </p>
+              <Link
+                href="/inventaris"
+                className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform active:scale-95"
+              >
+                Buka Inventaris
+              </Link>
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
               {filteredProducts.map((product) => (
                 <ProductCard
@@ -851,6 +874,7 @@ export function KasirView() {
                 cashReceivedNum={cashReceivedNum}
                 change={change}
                 cartTotal={cartTotal}
+                onConfirm={handleCheckoutConfirm}
               />
 
               {/* Total block */}

@@ -170,6 +170,7 @@ export function PengaturanView() {
                     onChange={(event) => updateField("storeName", event.target.value)}
                     className="h-11 rounded-2xl"
                     placeholder="Contoh: Warung Berkah Bu Rani"
+                    autoComplete="organization"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -223,6 +224,7 @@ export function PengaturanView() {
                     onChange={(event) => updateField("ownerName", event.target.value)}
                     className="h-11 rounded-2xl"
                     placeholder="Contoh: Ibu Rani"
+                    autoComplete="name"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -235,6 +237,7 @@ export function PengaturanView() {
                     onChange={(event) => updateField("ownerWhatsapp", event.target.value)}
                     className="h-11 rounded-2xl"
                     placeholder="Contoh: 081234567890"
+                    autoComplete="tel"
                   />
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
