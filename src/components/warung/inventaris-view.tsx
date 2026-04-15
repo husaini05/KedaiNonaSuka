@@ -84,11 +84,12 @@ function ProductForm({
           <Label htmlFor="product-stock">Stok awal</Label>
           <Input
             id="product-stock"
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={0}
-            value={draft.stock}
-            onChange={(event) => onChange({ ...draft, stock: Number(event.target.value) })}
+            placeholder="0"
+            value={draft.stock === 0 ? "" : draft.stock}
+            onFocus={(e) => e.target.select()}
+            onChange={(event) => onChange({ ...draft, stock: event.target.value === "" ? 0 : Math.max(0, Math.floor(Number(event.target.value))) })}
             className="h-11 rounded-2xl"
           />
         </div>
@@ -99,11 +100,12 @@ function ProductForm({
           <Label htmlFor="product-buy-price">Harga beli</Label>
           <Input
             id="product-buy-price"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            value={draft.buyPrice}
-            onChange={(event) => onChange({ ...draft, buyPrice: Number(event.target.value) })}
+            type="text"
+            inputMode="numeric"
+            placeholder="0"
+            value={draft.buyPrice === 0 ? "" : draft.buyPrice}
+            onFocus={(e) => e.target.select()}
+            onChange={(event) => onChange({ ...draft, buyPrice: event.target.value === "" ? 0 : Math.max(0, Number(event.target.value)) })}
             className="h-11 rounded-2xl"
           />
         </div>
@@ -111,11 +113,12 @@ function ProductForm({
           <Label htmlFor="product-sell-price">Harga jual</Label>
           <Input
             id="product-sell-price"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            value={draft.sellPrice}
-            onChange={(event) => onChange({ ...draft, sellPrice: Number(event.target.value) })}
+            type="text"
+            inputMode="numeric"
+            placeholder="0"
+            value={draft.sellPrice === 0 ? "" : draft.sellPrice}
+            onFocus={(e) => e.target.select()}
+            onChange={(event) => onChange({ ...draft, sellPrice: event.target.value === "" ? 0 : Math.max(0, Number(event.target.value)) })}
             className="h-11 rounded-2xl"
           />
         </div>
@@ -125,11 +128,12 @@ function ProductForm({
         <Label htmlFor="product-minimum-stock">Stok minimum</Label>
         <Input
           id="product-minimum-stock"
-          type="number"
+          type="text"
           inputMode="numeric"
-          min={0}
-          value={draft.minimumStock}
-          onChange={(event) => onChange({ ...draft, minimumStock: Number(event.target.value) })}
+          placeholder="0"
+          value={draft.minimumStock === 0 ? "" : draft.minimumStock}
+          onFocus={(e) => e.target.select()}
+          onChange={(event) => onChange({ ...draft, minimumStock: event.target.value === "" ? 0 : Math.max(0, Math.floor(Number(event.target.value))) })}
           className="h-11 rounded-2xl"
         />
       </div>
@@ -556,11 +560,12 @@ export function InventarisView() {
               <Label htmlFor="restock-amount">Jumlah tambahan stok</Label>
               <Input
                 id="restock-amount"
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={1}
-                value={restockAmount}
-                onChange={(event) => setRestockAmount(Number(event.target.value))}
+                placeholder="0"
+                value={restockAmount === 0 ? "" : restockAmount}
+                onFocus={(e) => e.target.select()}
+                onChange={(event) => setRestockAmount(event.target.value === "" ? 0 : Math.max(0, Math.floor(Number(event.target.value))))}
                 className="h-11 rounded-2xl"
               />
             </div>

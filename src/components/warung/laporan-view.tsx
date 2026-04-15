@@ -429,11 +429,12 @@ export function LaporanView() {
                     <Label htmlFor="expense-amount">Nominal (Rp)</Label>
                     <Input
                       id="expense-amount"
-                      type="number"
-                      inputMode="decimal"
-                      min={0}
-                      value={expenseDraft.amount || ""}
-                      onChange={(e) => setExpenseDraft({ ...expenseDraft, amount: Number(e.target.value) })}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={expenseDraft.amount === 0 ? "" : expenseDraft.amount}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => setExpenseDraft({ ...expenseDraft, amount: e.target.value === "" ? 0 : Math.max(0, Number(e.target.value)) })}
                       className="h-11 rounded-2xl"
                     />
                   </div>
