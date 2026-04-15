@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Poppins, Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AppStateProvider } from "@/components/providers/app-state-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { PWARegister } from "@/components/pwa-register";
 import "./globals.css";
 
@@ -56,11 +57,13 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${poppins.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AppStateProvider>
-          {children}
-          <Toaster richColors position="top-center" />
-          <PWARegister />
-        </AppStateProvider>
+        <ErrorBoundary>
+          <AppStateProvider>
+            {children}
+            <Toaster richColors position="top-center" />
+            <PWARegister />
+          </AppStateProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -15,6 +15,7 @@ type CartLine = {
 
 type AppStateContextValue = AppState & {
   isLoading: boolean;
+  loadError: string | null;
   cartLines: CartLine[];
   cartTotal: number;
   lowStockProducts: Product[];
@@ -42,7 +43,30 @@ type AppStateContextValue = AppState & {
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
+// Simple in-memory cache for GET requests — avoids redundant server calls
+// when the user navigates back to a page within the same session.
+const _getCache = new Map<string, { data: unknown; ts: number }>();
+const GET_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function invalidateGetCache() {
+  _getCache.clear();
+}
+
 async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const method = (init?.method ?? "GET").toUpperCase();
+  const isGet = method === "GET";
+  const key = typeof input === "string" ? input : input.toString();
+
+  if (isGet) {
+    const cached = _getCache.get(key);
+    if (cached && Date.now() - cached.ts < GET_CACHE_TTL_MS) {
+      return cached.data as T;
+    }
+  } else {
+    // Any mutation invalidates all cached GET responses so data stays fresh
+    invalidateGetCache();
+  }
+
   const response = await fetch(input, {
     ...init,
     headers: {
@@ -64,6 +88,10 @@ async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T
     throw new Error("Server mengembalikan respons kosong.");
   }
 
+  if (isGet) {
+    _getCache.set(key, { data, ts: Date.now() });
+  }
+
   return data as T;
 }
 
@@ -83,6 +111,7 @@ export function AppStateProvider({
   const router = useRouter();
   const [state, setState] = useState<AppState>(emptyAppState);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { data: session, isPending } = useSession();
   const sessionUserId = session?.user?.id ?? null;
 
@@ -107,6 +136,7 @@ export function AppStateProvider({
     void requestJson<{ appState: AppState }>("/api/bootstrap")
       .then((response) => {
         if (!isActive) return;
+        setLoadError(null);
         setState((current) => ({
           ...response.appState,
           cart: current.cart,
@@ -120,6 +150,12 @@ export function AppStateProvider({
         if (error instanceof Error && error.message === "UNAUTHORIZED") {
           setState(emptyAppState);
           router.replace("/auth");
+        } else {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Gagal memuat data. Periksa koneksi internet lalu muat ulang."
+          );
         }
       })
       .finally(() => {
@@ -383,6 +419,7 @@ export function AppStateProvider({
     () => ({
       ...state,
       isLoading,
+      loadError,
       cartLines,
       cartTotal,
       lowStockProducts,
@@ -403,8 +440,14 @@ export function AppStateProvider({
       updateSettings,
       resetWorkspace,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state, isLoading, cartLines, cartTotal, lowStockProducts]
+    [
+      state, isLoading, loadError, cartLines, cartTotal, lowStockProducts,
+      addToCart, updateCartQuantity, removeFromCart, setPaymentMethod,
+      checkout, addProduct, updateProduct, restockProduct,
+      addDebt, markDebtPaid, sendDebtReminder,
+      addExpense, deleteExpense, deleteProduct,
+      updateSettings, resetWorkspace,
+    ]
   );
 
   return (

@@ -210,11 +210,12 @@ export function BukuHutangView() {
                   <Label htmlFor="borrower-amount">Nominal hutang</Label>
                   <Input
                     id="borrower-amount"
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    value={draft.amount}
-                    onChange={(event) => setDraft({ ...draft, amount: Number(event.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={draft.amount === 0 ? "" : draft.amount}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(event) => setDraft({ ...draft, amount: event.target.value === "" ? 0 : Math.max(0, Number(event.target.value)) })}
                     className="h-11 rounded-2xl"
                   />
                 </div>

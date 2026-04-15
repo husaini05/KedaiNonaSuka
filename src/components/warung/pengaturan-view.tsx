@@ -19,9 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, getInitials } from "@/lib/format";
 import { PrinterSettingsCard } from "@/components/printer-connect";
-import { getInitials } from "@/lib/format";
 import { PaymentMethod, Settings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { AlertTriangle, ArrowRightLeft, BarChart3, PackagePlus, ReceiptText, ScrollText, ShoppingBasket, TrendingUp, WalletCards } from "lucide-react";
 import { useAppState } from "@/components/providers/app-state-provider";
@@ -41,33 +42,34 @@ export function DashboardView() {
     );
   }
 
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  const today = useMemo(() => new Date(), []);
 
-  const todayTransactions = transactions.filter((t) => {
-    return new Date(t.createdAt).toDateString() === today.toDateString();
-  });
-  const todaySales = todayTransactions.reduce((sum, t) => sum + t.total, 0);
+  const { todayTransactions, todaySales, yesterdaySales, trendPct, todayLabel } = useMemo(() => {
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const todayStr = today.toDateString();
+    const yestStr = yesterday.toDateString();
 
-  const yesterdaySales = transactions
-    .filter((t) => new Date(t.createdAt).toDateString() === yesterday.toDateString())
-    .reduce((sum, t) => sum + t.total, 0);
+    const todayTxns = transactions.filter((t) => new Date(t.createdAt).toDateString() === todayStr);
+    const todayRev = todayTxns.reduce((sum, t) => sum + t.total, 0);
+    const yestRev = transactions
+      .filter((t) => new Date(t.createdAt).toDateString() === yestStr)
+      .reduce((sum, t) => sum + t.total, 0);
 
-  const trendPct =
-    yesterdaySales > 0
-      ? Math.round(((todaySales - yesterdaySales) / yesterdaySales) * 100)
-      : null;
+    return {
+      todayTransactions: todayTxns,
+      todaySales: todayRev,
+      yesterdaySales: yestRev,
+      trendPct: yestRev > 0 ? Math.round(((todayRev - yestRev) / yestRev) * 100) : null,
+      todayLabel: today.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" }),
+    };
+  }, [transactions, today]);
 
-  const todayLabel = today.toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-
-  const outstandingDebt = debts.filter((d) => !d.isPaid).reduce((sum, d) => sum + d.amount, 0);
-  const latestTransaction = transactions[0] ?? null;
-  const latestDebts = debts.filter((d) => !d.isPaid).slice(0, 4);
+  const { outstandingDebt, latestTransaction, latestDebts } = useMemo(() => ({
+    outstandingDebt: debts.filter((d) => !d.isPaid).reduce((sum, d) => sum + d.amount, 0),
+    latestTransaction: transactions[0] ?? null,
+    latestDebts: debts.filter((d) => !d.isPaid).slice(0, 4),
+  }), [debts, transactions]);
 
   const ownerFirstName = settings.ownerName?.split(" ")[0] ?? "Pemilik";
 
@@ -169,7 +171,7 @@ export function DashboardView() {
         <Card className="border-border/60 bg-white shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="font-heading text-xl">Aktivitas terbaru</CardTitle>
-            <CardDescription>Transaksi terakhir dan timeline penjualan hari ini.</CardDescription>
+            <CardDescription>Transaksi terakhir dan 5 aktivitas paling baru.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Latest transaction highlight */}
@@ -238,7 +240,7 @@ export function DashboardView() {
                 ))}
                 {transactions.length === 0 && (
                   <p className="py-4 text-center text-sm text-muted-foreground">
-                    Belum ada transaksi hari ini.
+                    Belum ada transaksi tersimpan.
                   </p>
                 )}
               </div>

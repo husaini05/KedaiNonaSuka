@@ -39,7 +39,7 @@ export function AppShell({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
-  const { settings, transactions } = useAppState();
+  const { settings, transactions, loadError } = useAppState();
   const { data: session } = useSession();
   const activePage = pageTitles[pathname] ?? pageTitles["/kasir"];
   const userInitials = getInitials(
@@ -154,6 +154,22 @@ export function AppShell({
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">{activePage.subtitle}</p>
           </div>
+          {/* Network / bootstrap error banner */}
+          {loadError && (
+            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3">
+              <span className="text-lg leading-none">⚠️</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-destructive">Gagal memuat data</p>
+                <p className="mt-0.5 text-xs text-destructive/80">{loadError}</p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="shrink-0 rounded-xl bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground"
+              >
+                Muat ulang
+              </button>
+            </div>
+          )}
           {children}
         </main>
       </div>

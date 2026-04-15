@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BanknoteArrowDown,
@@ -78,7 +78,7 @@ function getQuickAmounts(total: number): number[] {
   return denominations.filter((d) => d >= total).slice(0, 3);
 }
 
-function ProductCard({ product, onAdd, isAnimating = false }: { product: Product; onAdd: () => void; isAnimating?: boolean }) {
+const ProductCard = memo(function ProductCard({ product, onAdd, isAnimating = false }: { product: Product; onAdd: (productId: string) => void; isAnimating?: boolean }) {
   const lowStock = product.stock <= product.minimumStock && product.stock > 0;
   const outOfStock = product.stock <= 0;
   const emoji = categoryEmoji[product.category] ?? "🏪";
@@ -87,7 +87,10 @@ function ProductCard({ product, onAdd, isAnimating = false }: { product: Product
   return (
     <button
       type="button"
-      onClick={onAdd}
+      onClick={() => {
+        onAdd(product.id);
+        toast.success(`${product.name} ditambahkan`, { description: formatCurrency(product.sellPrice) });
+      }}
       disabled={outOfStock}
       className={cn(
         "group relative flex min-h-[9.5rem] flex-col rounded-2xl bg-white p-3.5 text-left shadow-sm",
@@ -141,7 +144,7 @@ function ProductCard({ product, onAdd, isAnimating = false }: { product: Product
       </div>
     </button>
   );
-}
+});
 
 // ─── Cart Items List ──────────────────────────────────────────────────────────
 
@@ -153,7 +156,7 @@ type CartItemsListProps = {
   removeFromCart: (productId: string) => void;
 };
 
-function CartItemsList({ cartLines, updateCartQuantity, removeFromCart }: CartItemsListProps) {
+const CartItemsList = memo(function CartItemsList({ cartLines, updateCartQuantity, removeFromCart }: CartItemsListProps) {
   return (
     <div className="space-y-2.5">
       {cartLines.map((line) => (
@@ -188,7 +191,7 @@ function CartItemsList({ cartLines, updateCartQuantity, removeFromCart }: CartIt
       ))}
     </div>
   );
-}
+});
 
 // ─── Payment Section ──────────────────────────────────────────────────────────
 
@@ -371,19 +374,34 @@ export function KasirView() {
     if (cartLines.length === 0) setCartSheetOpen(false);
   }, [cartLines.length]);
 
-  if (isLoading) return <KasirSkeleton />;
+  // Stable callback — only ProductCards whose `isAnimating` boolean changes will re-render
+  const handleAddToCart = useCallback((productId: string) => {
+    addToCart(productId);
+    vibrate(30);
+    setAnimatingIds((prev) => new Set([...prev, productId]));
+    setTimeout(() => {
+      setAnimatingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+    }, 400);
+  }, [addToCart]);
 
-  const filteredProducts = products.filter((p) => {
+  // Memoised — avoid full array scan on every keystroke render
+  const filteredProducts = useMemo(() => products.filter((p) => {
     const q = query.toLowerCase();
     const matchQuery = !q || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
     const matchCat = category === "Semua" || p.category === category;
     return matchQuery && matchCat;
-  });
+  }), [products, query, category]);
 
-  const productCountByCategory = products.reduce<Record<string, number>>((acc, p) => {
+  const productCountByCategory = useMemo(() => products.reduce<Record<string, number>>((acc, p) => {
     acc[p.category] = (acc[p.category] ?? 0) + 1;
     return acc;
-  }, {});
+  }, {}), [products]);
+
+  if (isLoading) return <KasirSkeleton />;
 
   function buildReceiptText() {
     if (!lastTransaction) return "";
@@ -734,21 +752,7 @@ export function KasirView() {
                   key={product.id}
                   product={product}
                   isAnimating={animatingIds.has(product.id)}
-                  onAdd={() => {
-                    addToCart(product.id);
-                    vibrate(30);
-                    setAnimatingIds((prev) => new Set([...prev, product.id]));
-                    setTimeout(() => {
-                      setAnimatingIds((prev) => {
-                        const next = new Set(prev);
-                        next.delete(product.id);
-                        return next;
-                      });
-                    }, 400);
-                    toast.success(`${product.name} ditambahkan`, {
-                      description: formatCurrency(product.sellPrice),
-                    });
-                  }}
+                  onAdd={handleAddToCart}
                 />
               ))}
             </div>
