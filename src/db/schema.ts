@@ -28,6 +28,7 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "string" }),
 });
 
 export const transactions = pgTable("transactions", {
@@ -70,4 +71,5 @@ export const expenses = pgTable("expenses", {
   amount: integer("amount").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
   category: text("category").notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "string" }),
 });

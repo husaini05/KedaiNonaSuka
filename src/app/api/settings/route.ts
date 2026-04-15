@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestUser, updateStoreSettings } from "@/lib/server/app-service";
 import { handleRouteError } from "@/lib/server/route-error";
-import { Settings } from "@/lib/types";
+import { parseBody, SettingsSchema } from "@/lib/server/validators";
 
 export const runtime = "nodejs";
 
 export async function PUT(request: NextRequest) {
   try {
     const { userId } = await getRequestUser();
-    const settings = (await request.json()) as Settings;
+    const settings = parseBody(SettingsSchema, await request.json());
     const nextSettings = await updateStoreSettings(userId, settings);
     return NextResponse.json({ settings: nextSettings });
   } catch (error) {

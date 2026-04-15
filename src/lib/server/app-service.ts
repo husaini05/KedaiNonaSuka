@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db, pool } from "@/db/client";
 import {
   debts,
@@ -11,6 +11,21 @@ import {
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { AppState, DebtDraft, ExpenseDraft, PaymentMethod, ProductDraft, Settings, Transaction } from "@/lib/types";
+
+// ── Environment validation ──────────────────────────────────────────────────
+// Warn loudly at startup when required env vars are missing so the problem
+// is obvious before a real request hits a broken code path.
+if (process.env.NODE_ENV === "production") {
+  const missing: string[] = [];
+  if (!process.env.DATABASE_URL) missing.push("DATABASE_URL");
+  if (!process.env.BETTER_AUTH_SECRET) missing.push("BETTER_AUTH_SECRET");
+  if (missing.length > 0) {
+    throw new Error(
+      `[warungos] Missing required environment variables: ${missing.join(", ")}. ` +
+        "Set them in your hosting provider or .env.production file."
+    );
+  }
+}
 
 let initializationPromise: Promise<void> | null = null;
 const supportedPaymentMethods: PaymentMethod[] = ["Tunai", "QRIS", "Transfer"];
@@ -120,15 +135,22 @@ async function ensureTables() {
 
     ALTER TABLE transactions
       ADD COLUMN IF NOT EXISTS customer_name text;
-    
+
     ALTER TABLE transactions
       ADD COLUMN IF NOT EXISTS customer_phone text;
-    
+
     ALTER TABLE transactions
       ADD COLUMN IF NOT EXISTS customer_address text;
 
     ALTER TABLE products
       ADD COLUMN IF NOT EXISTS barcode text;
+
+    -- Soft-delete columns (NULL = active, timestamp = deleted)
+    ALTER TABLE products
+      ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+
+    ALTER TABLE expenses
+      ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 
     -- Performance indexes: filter-by-user queries hit these on every bootstrap
     CREATE INDEX IF NOT EXISTS idx_products_user_id
@@ -145,6 +167,28 @@ async function ensureTables() {
       ON debts(user_id, is_paid);
     CREATE INDEX IF NOT EXISTS idx_expenses_user_id
       ON expenses(user_id);
+
+    -- FK constraints and stock CHECK (idempotent via DO blocks)
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'fk_txn_items_transaction'
+      ) THEN
+        ALTER TABLE transaction_items
+          ADD CONSTRAINT fk_txn_items_transaction
+          FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE;
+      END IF;
+    END $$;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'chk_products_stock_nonneg'
+      ) THEN
+        ALTER TABLE products
+          ADD CONSTRAINT chk_products_stock_nonneg CHECK (stock >= 0);
+      END IF;
+    END $$;
   `);
 }
 
@@ -250,7 +294,7 @@ export async function getBootstrapState(userId: string): Promise<AppState> {
       db
         .select()
         .from(products)
-        .where(eq(products.userId, userId))
+        .where(and(eq(products.userId, userId), isNull(products.deletedAt)))
         .orderBy(desc(products.createdAt)),
       db
         .select()
@@ -265,7 +309,7 @@ export async function getBootstrapState(userId: string): Promise<AppState> {
       db
         .select()
         .from(expenses)
-        .where(eq(expenses.userId, userId))
+        .where(and(eq(expenses.userId, userId), isNull(expenses.deletedAt)))
         .orderBy(desc(expenses.createdAt)),
     ]);
 
@@ -371,6 +415,11 @@ export async function createProduct(userId: string, draft: ProductDraft) {
 }
 
 export async function updateProduct(userId: string, productId: string, draft: ProductDraft) {
+  // Guard: stock must never go negative via a manual edit
+  if (draft.stock < 0) {
+    throw new Error("Stok tidak boleh negatif.");
+  }
+
   const [updated] = await db
     .update(products)
     .set({
@@ -383,11 +432,17 @@ export async function updateProduct(userId: string, productId: string, draft: Pr
       description: draft.description,
       updatedAt: nowIso(),
     })
-    .where(and(eq(products.id, productId), eq(products.userId, userId)))
+    .where(
+      and(
+        eq(products.id, productId),
+        eq(products.userId, userId),
+        isNull(products.deletedAt)
+      )
+    )
     .returning();
 
   if (!updated) {
-    throw new Error("Produk tidak ditemukan.");
+    throw new Error("Data tidak ditemukan.");
   }
 
   return {
@@ -407,24 +462,25 @@ export async function restockProduct(userId: string, productId: string, quantity
     throw new Error("Jumlah restok harus berupa angka bulat lebih dari 0.");
   }
 
-  const [existing] = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.id, productId), eq(products.userId, userId)))
-    .limit(1);
-
-  if (!existing) {
-    throw new Error("Produk tidak ditemukan.");
-  }
-
+  // Atomic increment: no read-modify-write race condition
   const [updated] = await db
     .update(products)
     .set({
-      stock: existing.stock + quantity,
+      stock: sql`${products.stock} + ${quantity}`,
       updatedAt: nowIso(),
     })
-    .where(and(eq(products.id, productId), eq(products.userId, userId)))
+    .where(
+      and(
+        eq(products.id, productId),
+        eq(products.userId, userId),
+        isNull(products.deletedAt)
+      )
+    )
     .returning();
+
+  if (!updated) {
+    throw new Error("Data tidak ditemukan.");
+  }
 
   return {
     id: updated.id,
@@ -452,34 +508,45 @@ export async function createTransaction(
     throw new Error("Keranjang masih kosong.");
   }
 
-  const productIds = payload.items.map((item) => item.productId);
-  const productRows = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.userId, userId), inArray(products.id, productIds)));
-
-  const productMap = new Map(productRows.map((product) => [product.id, product]));
-  const lineItems = payload.items.map((item) => {
-    const product = productMap.get(item.productId);
-    if (!product) {
-      throw new Error("Salah satu produk tidak ditemukan.");
-    }
-
-    if (product.stock < item.quantity) {
-      throw new Error(`Stok ${product.name} tidak cukup.`);
-    }
-
-    return { product, quantity: item.quantity };
-  });
-
   const transactionId = createId("trx");
   const createdAt = nowIso();
-  const total = lineItems.reduce(
-    (sum, item) => sum + item.product.sellPrice * item.quantity,
-    0
-  );
+  const productIds = payload.items.map((item) => item.productId);
 
   await db.transaction(async (tx) => {
+    // ── Lock product rows FOR UPDATE inside the transaction ──────────────
+    // This prevents two concurrent checkouts from both passing the stock
+    // check before either one has committed its deduction (oversell race).
+    const lockedProducts = await tx
+      .select()
+      .from(products)
+      .where(
+        and(
+          eq(products.userId, userId),
+          inArray(products.id, productIds),
+          isNull(products.deletedAt)
+        )
+      )
+      .for("update");
+
+    const productMap = new Map(lockedProducts.map((p) => [p.id, p]));
+    const lineItems = payload.items.map((item) => {
+      const product = productMap.get(item.productId);
+      if (!product) {
+        throw new Error("Salah satu produk tidak valid.");
+      }
+
+      if (product.stock < item.quantity) {
+        throw new Error(`Stok ${product.name} tidak cukup.`);
+      }
+
+      return { product, quantity: item.quantity };
+    });
+
+    const total = lineItems.reduce(
+      (sum, item) => sum + item.product.sellPrice * item.quantity,
+      0
+    );
+
     await tx.insert(transactions).values({
       id: transactionId,
       userId,
@@ -503,14 +570,21 @@ export async function createTransaction(
       }))
     );
 
+    // Atomic decrement using SQL expression — avoids stale-read overwrite
     for (const item of lineItems) {
       await tx
         .update(products)
         .set({
-          stock: item.product.stock - item.quantity,
+          stock: sql`${products.stock} - ${item.quantity}`,
           updatedAt: createdAt,
         })
-        .where(and(eq(products.id, item.product.id), eq(products.userId, userId)));
+        .where(
+          and(
+            eq(products.id, item.product.id),
+            eq(products.userId, userId),
+            sql`${products.stock} >= ${item.quantity}`
+          )
+        );
     }
   });
 
@@ -565,7 +639,7 @@ export async function markDebtPaid(userId: string, debtId: string) {
     .returning();
 
   if (!updated) {
-    throw new Error("Data hutang tidak ditemukan.");
+    throw new Error("Data tidak ditemukan.");
   }
 
   return {
@@ -590,7 +664,7 @@ export async function remindDebt(userId: string, debtId: string) {
     .returning();
 
   if (!updated) {
-    throw new Error("Data hutang tidak ditemukan.");
+    throw new Error("Data tidak ditemukan.");
   }
 
   return {
@@ -606,13 +680,22 @@ export async function remindDebt(userId: string, debtId: string) {
 }
 
 export async function deleteProduct(userId: string, productId: string) {
-  const [deleted] = await db
-    .delete(products)
-    .where(and(eq(products.id, productId), eq(products.userId, userId)))
+  // Soft-delete: mark deleted_at instead of removing the row so that
+  // historical transaction_items retain their product reference.
+  const [soft] = await db
+    .update(products)
+    .set({ deletedAt: nowIso() })
+    .where(
+      and(
+        eq(products.id, productId),
+        eq(products.userId, userId),
+        isNull(products.deletedAt)
+      )
+    )
     .returning({ id: products.id });
 
-  if (!deleted) throw new Error("Produk tidak ditemukan.");
-  return deleted.id;
+  if (!soft) throw new Error("Data tidak ditemukan.");
+  return soft.id;
 }
 
 export async function createExpense(userId: string, draft: ExpenseDraft) {
@@ -645,13 +728,21 @@ export async function createExpense(userId: string, draft: ExpenseDraft) {
 }
 
 export async function deleteExpense(userId: string, expenseId: string) {
-  const [deleted] = await db
-    .delete(expenses)
-    .where(and(eq(expenses.id, expenseId), eq(expenses.userId, userId)))
+  // Soft-delete: preserve for historical reporting
+  const [soft] = await db
+    .update(expenses)
+    .set({ deletedAt: nowIso() })
+    .where(
+      and(
+        eq(expenses.id, expenseId),
+        eq(expenses.userId, userId),
+        isNull(expenses.deletedAt)
+      )
+    )
     .returning({ id: expenses.id });
 
-  if (!deleted) throw new Error("Pengeluaran tidak ditemukan.");
-  return deleted.id;
+  if (!soft) throw new Error("Data tidak ditemukan.");
+  return soft.id;
 }
 
 export async function updateStoreSettings(userId: string, settings: Settings) {
@@ -688,7 +779,7 @@ export async function updateStoreSettings(userId: string, settings: Settings) {
     .returning();
 
   if (!updated) {
-    throw new Error("Pengaturan warung tidak ditemukan.");
+    throw new Error("Data tidak ditemukan.");
   }
 
   return mapSettings(updated);

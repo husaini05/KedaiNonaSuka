@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createExpense, getRequestUser } from "@/lib/server/app-service";
 import { handleRouteError } from "@/lib/server/route-error";
-import { ExpenseDraft } from "@/lib/types";
+import { ExpenseDraftSchema, parseBody } from "@/lib/server/validators";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await getRequestUser();
-    const body = (await request.json()) as ExpenseDraft;
+    const body = parseBody(ExpenseDraftSchema, await request.json());
     const expense = await createExpense(userId, body);
     return NextResponse.json({ expense });
   } catch (error) {

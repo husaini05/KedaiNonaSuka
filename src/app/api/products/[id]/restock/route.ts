@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestUser, restockProduct } from "@/lib/server/app-service";
 import { handleRouteError } from "@/lib/server/route-error";
+import { parseBody, RestockSchema } from "@/lib/server/validators";
 
 export const runtime = "nodejs";
 
@@ -11,8 +12,8 @@ export async function POST(
   try {
     const { userId } = await getRequestUser();
     const { id } = await context.params;
-    const body = (await request.json()) as { quantity: number };
-    const product = await restockProduct(userId, id, Number(body.quantity));
+    const { quantity } = parseBody(RestockSchema, await request.json());
+    const product = await restockProduct(userId, id, quantity);
     return NextResponse.json({ product });
   } catch (error) {
     return handleRouteError(error, "Gagal menambah stok.");
