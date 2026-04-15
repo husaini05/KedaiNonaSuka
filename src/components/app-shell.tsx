@@ -69,6 +69,8 @@ export function AppShell({
           {/* User avatar — taps to Pengaturan */}
           <Link
             href="/pengaturan"
+            title="Pengaturan"
+            aria-label="Buka pengaturan warung"
             className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
           >
             {userInitials}

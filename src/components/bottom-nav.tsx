@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, LayoutDashboard, Package2, Settings2, ShoppingBasket } from "lucide-react";
+import { BarChart3, BookOpen, LayoutDashboard, Package2, ShoppingBasket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Pengaturan sengaja tidak masuk bottom nav karena sudah bisa diakses
+// lewat tap avatar pengguna di top bar mobile (app-shell.tsx).
 const items = [
-  { href: "/dashboard",   label: "Beranda",    icon: LayoutDashboard },
-  { href: "/kasir",       label: "Kasir",      icon: ShoppingBasket },
-  { href: "/inventaris",  label: "Stok",       icon: Package2 },
-  { href: "/laporan",     label: "Laporan",    icon: BarChart3 },
-  { href: "/pengaturan",  label: "Pengaturan", icon: Settings2 },
+  { href: "/dashboard",   label: "Beranda",  icon: LayoutDashboard },
+  { href: "/kasir",       label: "Kasir",    icon: ShoppingBasket },
+  { href: "/inventaris",  label: "Stok",     icon: Package2 },
+  { href: "/buku-hutang", label: "Kasbon",   icon: BookOpen },
+  { href: "/laporan",     label: "Laporan",  icon: BarChart3 },
 ];
 
 export function BottomNav() {
