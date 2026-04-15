@@ -29,11 +29,13 @@ type AppStateContextValue = AppState & {
   }) => Promise<Transaction | null>;
   addProduct: (draft: ProductDraft) => Promise<void>;
   updateProduct: (productId: string, draft: ProductDraft) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
   restockProduct: (productId: string, quantity: number) => Promise<void>;
   addDebt: (draft: DebtDraft) => Promise<void>;
   markDebtPaid: (debtId: string) => Promise<void>;
   sendDebtReminder: (debtId: string) => Promise<Debt | null>;
   addExpense: (draft: ExpenseDraft) => Promise<void>;
+  deleteExpense: (expenseId: string) => Promise<void>;
   updateSettings: (settings: Settings) => Promise<void>;
   resetWorkspace: () => Promise<void>;
 };
@@ -296,6 +298,22 @@ export function AppStateProvider({
     }));
   }, []);
 
+  const deleteProduct = useCallback(async (productId: string) => {
+    await requestJson(`/api/products/${productId}`, { method: "DELETE" });
+    setState((current) => ({
+      ...current,
+      products: current.products.filter((p) => p.id !== productId),
+    }));
+  }, []);
+
+  const deleteExpense = useCallback(async (expenseId: string) => {
+    await requestJson(`/api/expenses/${expenseId}`, { method: "DELETE" });
+    setState((current) => ({
+      ...current,
+      expenses: current.expenses.filter((e) => e.id !== expenseId),
+    }));
+  }, []);
+
   const addExpense = useCallback(async (draft: ExpenseDraft) => {
     const response = await requestJson<{ expense: Expense }>("/api/expenses", {
       method: "POST",
@@ -380,6 +398,8 @@ export function AppStateProvider({
       markDebtPaid,
       sendDebtReminder,
       addExpense,
+      deleteExpense,
+      deleteProduct,
       updateSettings,
       resetWorkspace,
     }),

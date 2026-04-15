@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, CreditCard, Download, Plus, Printer, Sparkles, TrendingUp } from "lucide-react";
+import { BarChart3, CreditCard, Download, Plus, Printer, Sparkles, Trash2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
@@ -31,10 +31,23 @@ const emptyExpenseDraft: ExpenseDraft = {
 };
 
 export function LaporanView() {
-  const { isLoading, transactions, expenses, products, settings, addExpense } = useAppState();
+  const { isLoading, transactions, expenses, products, settings, addExpense, deleteExpense } = useAppState();
   const [range, setRange] = useState<ReportRange>("harian");
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [expenseDraft, setExpenseDraft] = useState<ExpenseDraft>(emptyExpenseDraft);
+  const [confirmDeleteExpenseId, setConfirmDeleteExpenseId] = useState<string | null>(null);
+
+  async function handleDeleteExpense() {
+    if (!confirmDeleteExpenseId) return;
+    try {
+      await deleteExpense(confirmDeleteExpenseId);
+      toast.success("Pengeluaran dihapus.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus pengeluaran.");
+    } finally {
+      setConfirmDeleteExpenseId(null);
+    }
+  }
 
   async function handleAddExpense() {
     try {
@@ -464,17 +477,25 @@ export function LaporanView() {
               {expenses.slice(0, 10).map((expense) => (
                 <div
                   key={expense.id}
-                  className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 px-4 py-3"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{expense.title}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {expense.category} · {formatDateTime(expense.createdAt)}
                     </p>
                   </div>
-                  <p className="ml-3 shrink-0 font-mono text-sm font-bold text-foreground">
+                  <p className="shrink-0 font-mono text-sm font-bold text-foreground">
                     {formatCurrency(expense.amount)}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteExpenseId(expense.id)}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground/40 transition hover:bg-destructive/10 hover:text-destructive"
+                    aria-label="Hapus pengeluaran"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
                 </div>
               ))}
               {expenses.length > 10 && (
@@ -486,6 +507,30 @@ export function LaporanView() {
           )}
         </CardContent>
       </Card>
+
+      {/* ── Confirm delete expense ── */}
+      <Dialog open={Boolean(confirmDeleteExpenseId)} onOpenChange={(open) => !open && setConfirmDeleteExpenseId(null)}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm rounded-[28px] p-0 flex flex-col overflow-hidden">
+          <DialogHeader className="p-5 pb-0">
+            <DialogTitle className="font-heading text-xl">Hapus pengeluaran?</DialogTitle>
+            <DialogDescription>
+              {confirmDeleteExpenseId
+                ? `Hapus "${expenses.find((e) => e.id === confirmDeleteExpenseId)?.title ?? "pengeluaran ini"}". Tindakan ini tidak bisa dibatalkan.`
+                : "Konfirmasi penghapusan pengeluaran."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
+            <Button
+              type="button"
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => void handleDeleteExpense()}
+            >
+              <Trash2 className="size-4" />
+              Ya, hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

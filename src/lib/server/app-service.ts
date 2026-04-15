@@ -588,6 +588,16 @@ export async function remindDebt(userId: string, debtId: string) {
   };
 }
 
+export async function deleteProduct(userId: string, productId: string) {
+  const [deleted] = await db
+    .delete(products)
+    .where(and(eq(products.id, productId), eq(products.userId, userId)))
+    .returning({ id: products.id });
+
+  if (!deleted) throw new Error("Produk tidak ditemukan.");
+  return deleted.id;
+}
+
 export async function createExpense(userId: string, draft: ExpenseDraft) {
   if (!draft.title?.trim()) {
     throw new Error("Judul pengeluaran tidak boleh kosong.");
@@ -615,6 +625,16 @@ export async function createExpense(userId: string, draft: ExpenseDraft) {
     createdAt: expense.createdAt,
     category: expense.category as AppState["expenses"][number]["category"],
   };
+}
+
+export async function deleteExpense(userId: string, expenseId: string) {
+  const [deleted] = await db
+    .delete(expenses)
+    .where(and(eq(expenses.id, expenseId), eq(expenses.userId, userId)))
+    .returning({ id: expenses.id });
+
+  if (!deleted) throw new Error("Pengeluaran tidak ditemukan.");
+  return deleted.id;
 }
 
 export async function updateStoreSettings(userId: string, settings: Settings) {

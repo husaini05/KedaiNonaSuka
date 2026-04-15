@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Boxes, PackagePlus, PencilLine, Search, TrendingUp, Warehouse } from "lucide-react";
+import { AlertTriangle, Boxes, PackagePlus, PencilLine, Search, Trash2, TrendingUp, Warehouse } from "lucide-react";
 import { toast } from "sonner";
 import { useAppState } from "@/components/providers/app-state-provider";
 import { StatCard } from "@/components/stat-card";
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/empty-state";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import { Product, ProductCategory, ProductDraft } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -149,7 +149,7 @@ function ProductForm({
 }
 
 export function InventarisView() {
-  const { isLoading, products, addProduct, updateProduct, restockProduct, lowStockProducts } = useAppState();
+  const { isLoading, products, addProduct, updateProduct, deleteProduct, restockProduct, lowStockProducts } = useAppState();
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState<ProductDraft>(emptyDraft);
@@ -157,6 +157,7 @@ export function InventarisView() {
   const [editDraft, setEditDraft] = useState<ProductDraft>(emptyDraft);
   const [restockTarget, setRestockTarget] = useState<Product | null>(null);
   const [restockAmount, setRestockAmount] = useState(12);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -242,6 +243,18 @@ export function InventarisView() {
     }
   }
 
+  async function handleDeleteProduct() {
+    if (!confirmDeleteId) return;
+    try {
+      await deleteProduct(confirmDeleteId);
+      toast.success("Produk berhasil dihapus.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus produk.");
+    } finally {
+      setConfirmDeleteId(null);
+    }
+  }
+
   function openEdit(product: Product) {
     setEditingProduct(product);
     setEditDraft({
@@ -274,7 +287,7 @@ export function InventarisView() {
         <div className="col-span-2 lg:col-span-1">
           <StatCard
             title="Nilai stok"
-            value={formatCurrency(totalInventoryValue)}
+            value={formatCompactCurrency(totalInventoryValue)}
             description="Estimasi modal di inventaris."
             tone="accent"
             icon={TrendingUp}
@@ -394,6 +407,15 @@ export function InventarisView() {
                   <Warehouse className="size-3.5" />
                   Restok
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full h-9 px-3 border-destructive/40 text-destructive hover:bg-destructive/5"
+                  onClick={() => setConfirmDeleteId(product.id)}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
               </div>
             </div>
           );
@@ -470,6 +492,14 @@ export function InventarisView() {
                             <Warehouse className="size-4" />
                             Restok
                           </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-full border-destructive/40 text-destructive hover:bg-destructive/5"
+                            onClick={() => setConfirmDeleteId(product.id)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -538,6 +568,30 @@ export function InventarisView() {
           <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
             <Button type="button" onClick={() => void handleRestock()}>
               Simpan restok
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Confirm delete dialog ── */}
+      <Dialog open={Boolean(confirmDeleteId)} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm rounded-[28px] p-0 flex flex-col overflow-hidden">
+          <DialogHeader className="p-5 pb-0">
+            <DialogTitle className="font-heading text-xl">Hapus produk?</DialogTitle>
+            <DialogDescription>
+              {confirmDeleteId
+                ? `Hapus ${products.find((p) => p.id === confirmDeleteId)?.name ?? "produk ini"} dari inventaris. Tindakan ini tidak bisa dibatalkan.`
+                : "Konfirmasi penghapusan produk."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
+            <Button
+              type="button"
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => void handleDeleteProduct()}
+            >
+              <Trash2 className="size-4" />
+              Ya, hapus produk
             </Button>
           </DialogFooter>
         </DialogContent>

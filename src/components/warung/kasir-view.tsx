@@ -30,6 +30,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { formatCurrency, getInitials } from "@/lib/format";
 import { PaymentMethod, Product, ProductCategory, Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { PrintReceiptButton } from "@/components/printer-connect";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -139,6 +140,53 @@ function ProductCard({ product, onAdd, isAnimating = false }: { product: Product
         )}
       </div>
     </button>
+  );
+}
+
+// ─── Cart Items List ──────────────────────────────────────────────────────────
+
+type CartLine = { product: { id: string; name: string; sellPrice: number; category: string }; quantity: number; lineTotal: number };
+
+type CartItemsListProps = {
+  cartLines: CartLine[];
+  updateCartQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string) => void;
+};
+
+function CartItemsList({ cartLines, updateCartQuantity, removeFromCart }: CartItemsListProps) {
+  return (
+    <div className="space-y-2.5">
+      {cartLines.map((line) => (
+        <div key={line.product.id} className="flex items-center gap-3 rounded-2xl bg-muted/40 px-3 py-2.5">
+          <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl text-lg", categoryBg[line.product.category] ?? "bg-gray-50")}>
+            {categoryEmoji[line.product.category] ?? "🏪"}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold leading-tight">{line.product.name}</p>
+            <p className="text-xs text-muted-foreground">{formatCurrency(line.product.sellPrice)}</p>
+          </div>
+          <div className="flex items-center gap-1 rounded-full bg-white px-1 py-0.5 shadow-sm">
+            <button type="button" onClick={() => updateCartQuantity(line.product.id, line.quantity - 1)}
+              className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90" aria-label="Kurangi">
+              <Minus className="size-3" />
+            </button>
+            <span className="min-w-[1.5rem] text-center text-sm font-bold">{line.quantity}</span>
+            <button type="button" onClick={() => updateCartQuantity(line.product.id, line.quantity + 1)}
+              className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90" aria-label="Tambah">
+              <Plus className="size-3" />
+            </button>
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <p className="text-sm font-bold text-foreground">{formatCurrency(line.lineTotal)}</p>
+            <button type="button" onClick={() => removeFromCart(line.product.id)}
+              className="flex size-5 items-center justify-center rounded-full text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
+              aria-label={`Hapus ${line.product.name}`}>
+              <X className="size-3" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -452,69 +500,6 @@ export function KasirView() {
     }
   }
 
-  // ── Cart items ───────────────────────────────────────────────────────────────
-
-  function CartItemsList() {
-    return (
-      <div className="space-y-2.5">
-        {cartLines.map((line) => (
-          <div
-            key={line.product.id}
-            className="flex items-center gap-3 rounded-2xl bg-muted/40 px-3 py-2.5"
-          >
-            {/* Emoji avatar */}
-            <div className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-xl text-lg",
-              categoryBg[line.product.category] ?? "bg-gray-50"
-            )}>
-              {categoryEmoji[line.product.category] ?? "🏪"}
-            </div>
-
-            {/* Product info */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold leading-tight">{line.product.name}</p>
-              <p className="text-xs text-muted-foreground">{formatCurrency(line.product.sellPrice)}</p>
-            </div>
-
-            {/* Qty stepper */}
-            <div className="flex items-center gap-1 rounded-full bg-white px-1 py-0.5 shadow-sm">
-              <button
-                type="button"
-                onClick={() => updateCartQuantity(line.product.id, line.quantity - 1)}
-                className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90"
-                aria-label="Kurangi"
-              >
-                <Minus className="size-3" />
-              </button>
-              <span className="min-w-[1.5rem] text-center text-sm font-bold">{line.quantity}</span>
-              <button
-                type="button"
-                onClick={() => updateCartQuantity(line.product.id, line.quantity + 1)}
-                className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-90"
-                aria-label="Tambah"
-              >
-                <Plus className="size-3" />
-              </button>
-            </div>
-
-            {/* Line total + remove */}
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              <p className="text-sm font-bold text-foreground">{formatCurrency(line.lineTotal)}</p>
-              <button
-                type="button"
-                onClick={() => removeFromCart(line.product.id)}
-                className="flex size-5 items-center justify-center rounded-full text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
-                aria-label={`Hapus ${line.product.name}`}
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -550,7 +535,7 @@ export function KasirView() {
             {/* Cart items — scrollable */}
             <ScrollArea className="flex-1 px-5 py-4">
               {cartLines.length > 0 ? (
-                <CartItemsList />
+                <CartItemsList cartLines={cartLines} updateCartQuantity={updateCartQuantity} removeFromCart={removeFromCart} />
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
                   <ShoppingBasket className="size-10 text-muted-foreground/30" />
@@ -807,7 +792,7 @@ export function KasirView() {
             {/* Cart items */}
             <ScrollArea className="h-[260px] p-4">
               {cartLines.length > 0 ? (
-                <CartItemsList />
+                <CartItemsList cartLines={cartLines} updateCartQuantity={updateCartQuantity} removeFromCart={removeFromCart} />
               ) : (
                 <div className="flex h-full min-h-[220px] flex-col items-center justify-center text-center">
                   <div className="flex size-16 items-center justify-center rounded-2xl bg-muted/50">
@@ -956,9 +941,30 @@ export function KasirView() {
           </div>
 
           <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
+            {lastTransaction && (
+              <PrintReceiptButton
+                receipt={{
+                  storeName: settings.storeName || "Warung Saya",
+                  storeAddress: settings.storeAddress,
+                  transactionId: lastTransaction.id.substring(0, 8),
+                  date: new Date(lastTransaction.createdAt).toLocaleDateString("id-ID"),
+                  time: new Date(lastTransaction.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+                  items: lastTransaction.items.map((i) => ({
+                    name: i.productName,
+                    qty: i.quantity,
+                    unitPrice: i.unitPrice,
+                  })),
+                  total: lastTransaction.total,
+                  paymentMethod: lastTransaction.paymentMethod,
+                  cashReceived: lastCashReceived > 0 ? lastCashReceived : undefined,
+                  change: lastCashReceived > 0 ? lastChange : undefined,
+                  footer: `Terima kasih - ${settings.storeName}`,
+                }}
+              />
+            )}
             <Button type="button" variant="outline" onClick={printDetailReceipt}>
               <Printer className="size-4" />
-              Cetak Struk
+              Browser
             </Button>
             <Button type="button" onClick={() => void handleShareReceipt()}>
               <Share2 className="size-4" />

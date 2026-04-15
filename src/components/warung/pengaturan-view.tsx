@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, BadgeCheck, Bell, LogOut, MapPin, RotateCcw, Store, WalletCards } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Bell, LogOut, MapPin, Printer, RotateCcw, Store, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useAppState } from "@/components/providers/app-state-provider";
@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/format";
+import { PrinterSettingsCard } from "@/components/printer-connect";
 import { getInitials } from "@/lib/format";
 import { PaymentMethod, Settings } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -401,6 +402,24 @@ export function PengaturanView() {
                 ))}
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Printer ── */}
+        <Card className="border-border/60 bg-white shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Printer className="size-5 text-primary" />
+              <div>
+                <CardTitle className="font-heading text-xl">Printer Thermal</CardTitle>
+                <CardDescription className="mt-1">
+                  Hubungkan printer Bluetooth ESC/POS untuk cetak struk langsung dari kasir.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <PrinterSettingsCard />
           </CardContent>
         </Card>
 
