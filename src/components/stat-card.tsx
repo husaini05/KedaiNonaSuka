@@ -13,7 +13,7 @@ export function StatCard({ title, value, description, tone = "default", icon: Ic
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl p-4 shadow-sm",
+        "relative overflow-hidden rounded-2xl p-4 shadow-sm transition-shadow duration-150 hover:shadow-md",
         tone === "default" && "bg-white",
         tone === "accent" && "bg-green-50",
         tone === "warn"   && "bg-orange-50",
@@ -23,7 +23,7 @@ export function StatCard({ title, value, description, tone = "default", icon: Ic
       <div
         className={cn(
           "absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full",
-          tone === "default" && "bg-gray-200",
+          tone === "default" && "bg-primary/40",
           tone === "accent" && "bg-green-400",
           tone === "warn"   && "bg-primary",
         )}

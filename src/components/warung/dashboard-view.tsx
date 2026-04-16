@@ -76,34 +76,40 @@ export function DashboardView() {
   return (
     <div className="space-y-4">
       {/* ── Greeting banner ── */}
-      <div className="rounded-2xl bg-primary px-5 py-4 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl bg-primary px-5 py-5 shadow-sm">
+        {/* Decorative circles */}
+        <div className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-white/8" />
+        <div className="pointer-events-none absolute -right-2 top-6 size-16 rounded-full bg-white/6" />
+        <div className="pointer-events-none absolute right-12 -bottom-4 size-20 rounded-full bg-black/8" />
+
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-primary-foreground/70 text-xs font-medium">{todayLabel}</p>
+            <p className="text-primary-foreground/65 text-xs font-medium">{todayLabel}</p>
             <p className="mt-0.5 text-primary-foreground/90 text-sm font-medium">
-              {getGreeting()}, {ownerFirstName} 👋
+              {getGreeting()}, <span className="font-bold text-primary-foreground">{ownerFirstName}</span> 👋
             </p>
           </div>
           {trendPct !== null && (
             <div
               className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
                 trendPct >= 0
-                  ? "bg-green-500/25 text-green-100"
-                  : "bg-red-500/25 text-red-100"
+                  ? "bg-green-500/30 text-green-100"
+                  : "bg-red-500/30 text-red-100"
               }`}
             >
-              {trendPct >= 0 ? "▲" : "▼"} {Math.abs(trendPct)}% vs kemarin
+              {trendPct >= 0 ? "▲" : "▼"} {Math.abs(trendPct)}%
             </div>
           )}
         </div>
-        <p className="mt-2 font-heading text-xl font-bold text-primary-foreground leading-tight">
+        <p className="mt-2 font-heading text-2xl font-bold text-primary-foreground leading-tight tracking-tight">
           {settings.storeName}
         </p>
-        <div className="mt-3 flex items-center gap-1.5">
-          <div className="rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold text-primary-foreground">
-            {formatCompactCurrency(todaySales)} hari ini
+        <div className="mt-3 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full bg-primary-foreground/20 px-3 py-1.5">
+            <TrendingUp className="size-3 text-primary-foreground/80" />
+            <span className="text-xs font-bold text-primary-foreground">{formatCompactCurrency(todaySales)}</span>
           </div>
-          <div className="rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-medium text-primary-foreground/80">
+          <div className="rounded-full bg-primary-foreground/12 px-3 py-1.5 text-xs font-medium text-primary-foreground/75">
             {todayTransactions.length} transaksi
           </div>
         </div>
@@ -113,23 +119,29 @@ export function DashboardView() {
       <div className="grid grid-cols-3 gap-3">
         <Link
           href="/kasir"
-          className="flex flex-col items-center gap-2 rounded-2xl bg-primary p-4 shadow-sm transition-transform active:scale-[0.96]"
+          className="col-span-1 flex flex-col items-center gap-2 rounded-2xl bg-primary p-4 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.45)] transition-all duration-150 active:scale-[0.95] active:shadow-none"
         >
-          <ShoppingBasket className="size-5 text-white" />
-          <span className="text-xs font-semibold text-white">Buka Kasir</span>
+          <div className="flex size-9 items-center justify-center rounded-xl bg-white/20">
+            <ShoppingBasket className="size-5 text-white" />
+          </div>
+          <span className="text-xs font-bold text-white">Buka Kasir</span>
         </Link>
         <Link
           href="/inventaris"
-          className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-transform active:scale-[0.96]"
+          className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-all duration-150 active:scale-[0.95] hover:shadow-md"
         >
-          <PackagePlus className="size-5 text-primary" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+            <PackagePlus className="size-5 text-primary" />
+          </div>
           <span className="text-xs font-semibold text-foreground">Tambah Produk</span>
         </Link>
         <Link
           href="/laporan"
-          className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-transform active:scale-[0.96]"
+          className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-all duration-150 active:scale-[0.95] hover:shadow-md"
         >
-          <ScrollText className="size-5 text-primary" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+            <ScrollText className="size-5 text-primary" />
+          </div>
           <span className="text-xs font-semibold text-foreground">Laporan</span>
         </Link>
       </div>
