@@ -12,6 +12,8 @@ interface StatCardProps {
 export function StatCard({ title, value, description, tone = "default", icon: Icon }: StatCardProps) {
   return (
     <div
+      role="region"
+      aria-label={title}
       className={cn(
         "relative overflow-hidden rounded-2xl p-4 shadow-sm transition-shadow duration-150 hover:shadow-md",
         tone === "default" && "bg-white",
@@ -19,8 +21,9 @@ export function StatCard({ title, value, description, tone = "default", icon: Ic
         tone === "warn"   && "bg-orange-50",
       )}
     >
-      {/* Left accent bar */}
+      {/* Left accent bar — decorative */}
       <div
+        aria-hidden="true"
         className={cn(
           "absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full",
           tone === "default" && "bg-primary/40",
@@ -29,9 +32,10 @@ export function StatCard({ title, value, description, tone = "default", icon: Ic
         )}
       />
 
-      {/* Icon — top right */}
+      {/* Icon — decorative, top right */}
       {Icon && (
         <div
+          aria-hidden="true"
           className={cn(
             "absolute right-3 top-3 flex size-7 items-center justify-center rounded-xl",
             tone === "default" && "bg-gray-100",

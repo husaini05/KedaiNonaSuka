@@ -213,3 +213,24 @@ html {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Performance: promote animated layers to GPU composite ──────────────── */
+.animate-page-enter,
+[style*="authCardUp"],
+[style*="authLogoIn"],
+[style*="authFadeUp"],
+[style*="emojiDrift"] {
+  will-change: transform, opacity;
+}
+
+/* ── Respect user's "reduce motion" OS setting ──────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

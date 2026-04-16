@@ -78,11 +78,15 @@ export function AuthScreen() {
   const TabsAndError = (
     <>
       {/* Tabs */}
-      <div className="mb-6 flex w-full rounded-2xl bg-muted p-1">
+      <div role="tablist" aria-label="Mode akun" className="mb-6 flex w-full rounded-2xl bg-muted p-1">
         {(["signin", "signup"] as const).map((m) => (
           <button
             key={m}
             type="button"
+            role="tab"
+            aria-selected={mode === m}
+            aria-controls={`tabpanel-${m}`}
+            id={`tab-${m}`}
             className={cn(
               "flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200",
               mode === m
@@ -110,8 +114,8 @@ export function AuthScreen() {
 
       {/* Error banner */}
       {authError && (
-        <div className="mb-5 flex gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm">
-          <span className="text-base leading-none">⚠️</span>
+        <div role="alert" aria-live="assertive" className="mb-5 flex gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm">
+          <span aria-hidden="true" className="text-base leading-none">⚠️</span>
           <div className="flex-1">
             {isEmailNotVerified ? (
               <div className="space-y-1.5">
@@ -324,6 +328,9 @@ export function AuthScreen() {
       {TabsAndError}
       <div
         key={mode}
+        id={`tabpanel-${mode}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${mode}`}
         style={{ animation: "authFadeUp 0.22s cubic-bezier(0.4,0,0.2,1) both" }}
       >
         {mode === "signin" ? SignInForm : SignUpForm}
@@ -373,7 +380,7 @@ export function AuthScreen() {
                   animation: "authLogoIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
                 }}
               >
-                🍽️
+                <span aria-hidden="true">🍽️</span>
               </div>
               <p
                 className="mt-3 font-heading text-xl font-semibold text-white"

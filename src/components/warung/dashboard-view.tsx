@@ -119,30 +119,33 @@ export function DashboardView() {
       <div className="grid grid-cols-3 gap-3">
         <Link
           href="/kasir"
+          aria-label="Buka Kasir"
           className="col-span-1 flex flex-col items-center gap-2 rounded-2xl bg-primary p-4 shadow-[0_8px_24px_-8px_rgba(232,130,26,0.45)] transition-all duration-150 active:scale-[0.95] active:shadow-none"
         >
-          <div className="flex size-9 items-center justify-center rounded-xl bg-white/20">
+          <div aria-hidden="true" className="flex size-9 items-center justify-center rounded-xl bg-white/20">
             <ShoppingBasket className="size-5 text-white" />
           </div>
-          <span className="text-xs font-bold text-white">Buka Kasir</span>
+          <span aria-hidden="true" className="text-xs font-bold text-white">Buka Kasir</span>
         </Link>
         <Link
           href="/inventaris"
+          aria-label="Tambah Produk ke Inventaris"
           className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-all duration-150 active:scale-[0.95] hover:shadow-md"
         >
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+          <div aria-hidden="true" className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
             <PackagePlus className="size-5 text-primary" />
           </div>
-          <span className="text-xs font-semibold text-foreground">Tambah Produk</span>
+          <span aria-hidden="true" className="text-xs font-semibold text-foreground">Tambah Produk</span>
         </Link>
         <Link
           href="/laporan"
+          aria-label="Lihat Laporan"
           className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-all duration-150 active:scale-[0.95] hover:shadow-md"
         >
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+          <div aria-hidden="true" className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
             <ScrollText className="size-5 text-primary" />
           </div>
-          <span className="text-xs font-semibold text-foreground">Laporan</span>
+          <span aria-hidden="true" className="text-xs font-semibold text-foreground">Laporan</span>
         </Link>
       </div>
 
@@ -230,13 +233,13 @@ export function DashboardView() {
                 <ArrowRightLeft className="size-4 text-primary" />
                 <p className="text-sm font-semibold">Timeline transaksi</p>
               </div>
-              <div className="relative space-y-2">
+              <ol aria-label="5 transaksi terbaru" className="relative space-y-2">
                 {transactions.length > 1 && (
-                  <div className="absolute left-[15px] top-5 bottom-5 w-px bg-border/60" />
+                  <div aria-hidden="true" className="absolute left-[15px] top-5 bottom-5 w-px bg-border/60" />
                 )}
                 {transactions.slice(0, 5).map((t, idx) => (
-                  <div key={t.id} className="flex items-start gap-3">
-                    <div className={`relative z-10 mt-1 flex size-[30px] shrink-0 items-center justify-center rounded-full border-2 ${idx === 0 ? "border-primary bg-primary/10" : "border-border bg-white"}`}>
+                  <li key={t.id} className="flex items-start gap-3">
+                    <div aria-hidden="true" className={`relative z-10 mt-1 flex size-[30px] shrink-0 items-center justify-center rounded-full border-2 ${idx === 0 ? "border-primary bg-primary/10" : "border-border bg-white"}`}>
                       <div className={`size-2 rounded-full ${idx === 0 ? "bg-primary" : "bg-muted-foreground/40"}`} />
                     </div>
                     <div className="flex-1 rounded-2xl border border-border/60 bg-white px-4 py-3">
@@ -248,14 +251,14 @@ export function DashboardView() {
                         {t.items.length} produk · {t.paymentMethod}
                       </p>
                     </div>
-                  </div>
+                  </li>
                 ))}
                 {transactions.length === 0 && (
                   <p className="py-4 text-center text-sm text-muted-foreground">
                     Belum ada transaksi tersimpan.
                   </p>
                 )}
-              </div>
+              </ol>
             </div>
           </CardContent>
         </Card>
@@ -271,25 +274,30 @@ export function DashboardView() {
             </CardHeader>
             <CardContent className="space-y-2">
               {lowStockProducts.length > 0 ? (
-                lowStockProducts.slice(0, 5).map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex items-center justify-between rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex size-8 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                        <AlertTriangle className="size-3.5" />
+                <ul aria-label="Produk stok menipis" className="space-y-2">
+                  {lowStockProducts.slice(0, 5).map((product) => (
+                    <li
+                      key={product.id}
+                      className="flex items-center justify-between rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div aria-hidden="true" className="flex size-8 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                          <AlertTriangle className="size-3.5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{product.name}</p>
+                          <p className="text-xs text-muted-foreground">{product.category}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{product.name}</p>
-                        <p className="text-xs text-muted-foreground">{product.category}</p>
-                      </div>
-                    </div>
-                    <Badge className="rounded-full bg-primary/15 text-primary border-0 text-xs font-semibold">
-                      {product.stock} / {product.minimumStock}
-                    </Badge>
-                  </div>
-                ))
+                      <Badge
+                        aria-label={`Stok ${product.stock} dari minimum ${product.minimumStock}`}
+                        className="rounded-full bg-primary/15 text-primary border-0 text-xs font-semibold"
+                      >
+                        {product.stock} / {product.minimumStock}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
               ) : (
                 <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-4 text-sm font-medium text-green-700">
                   ✓ Semua stok aman.
@@ -306,23 +314,25 @@ export function DashboardView() {
             </CardHeader>
             <CardContent className="space-y-2">
               {latestDebts.length > 0 ? (
-                latestDebts.map((debt) => (
-                  <div
-                    key={debt.id}
-                    className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-muted/30 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <WalletCards className="size-4 shrink-0 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">{debt.borrowerName}</p>
-                        <p className="text-xs text-muted-foreground">{debt.whatsapp}</p>
+                <ul aria-label="Kasbon belum lunas" className="space-y-2">
+                  {latestDebts.map((debt) => (
+                    <li
+                      key={debt.id}
+                      className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-muted/30 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <WalletCards aria-hidden="true" className="size-4 shrink-0 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">{debt.borrowerName}</p>
+                          <p className="text-xs text-muted-foreground">{debt.whatsapp}</p>
+                        </div>
                       </div>
-                    </div>
-                    <p className="shrink-0 text-sm font-semibold text-foreground">
-                      {formatCurrency(debt.amount)}
-                    </p>
-                  </div>
-                ))
+                      <p className="shrink-0 text-sm font-semibold text-foreground">
+                        {formatCurrency(debt.amount)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
               ) : (
                 <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-4 text-sm font-medium text-green-700">
                   ✓ Tidak ada kasbon yang belum lunas.

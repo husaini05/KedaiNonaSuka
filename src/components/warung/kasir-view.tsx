@@ -30,7 +30,13 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { formatCurrency, getInitials } from "@/lib/format";
 import { PaymentMethod, Product, ProductCategory, Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { PrintReceiptButton } from "@/components/printer-connect";
+import dynamic from "next/dynamic";
+
+// Defer Bluetooth/ESC-POS bundle — only needed after a successful checkout
+const PrintReceiptButton = dynamic(
+  () => import("@/components/printer-connect").then((m) => ({ default: m.PrintReceiptButton })),
+  { ssr: false }
+);
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -92,6 +98,8 @@ const ProductCard = memo(function ProductCard({ product, onAdd, isAnimating = fa
         toast.success(`${product.name} ditambahkan`, { description: formatCurrency(product.sellPrice) });
       }}
       disabled={outOfStock}
+      aria-label={`${product.name}, ${formatCurrency(product.sellPrice)}${outOfStock ? ", stok habis" : lowStock ? `, sisa ${product.stock}` : ""}`}
+      aria-disabled={outOfStock}
       className={cn(
         "group relative flex min-h-[9.5rem] flex-col rounded-2xl bg-white p-3.5 text-left shadow-sm",
         "transition-all duration-150 active:scale-[0.94] active:shadow-none select-none",
@@ -228,13 +236,15 @@ function PaymentSection({
       </p>
 
       {/* Payment method cards */}
-      <div className="grid grid-cols-3 gap-2">
+      <div role="radiogroup" aria-label="Metode pembayaran" className="grid grid-cols-3 gap-2">
         {enabledPayments.map((method) => {
           const active = paymentMethod === method;
           return (
             <button
               key={method}
               type="button"
+              role="radio"
+              aria-checked={active}
               onClick={() => setPaymentMethod(method)}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-2xl border-2 py-3 px-2 transition-all duration-150 active:scale-95",
@@ -558,7 +568,7 @@ export function KasirView() {
 
           <div className="flex flex-col" style={{ maxHeight: "calc(90vh - 90px)" }}>
             {/* Cart items — scrollable */}
-            <ScrollArea className="flex-1 px-5 py-4">
+            <ScrollArea aria-label="Item keranjang" className="flex-1 px-5 py-4">
               {cartLines.length > 0 ? (
                 <CartItemsList cartLines={cartLines} updateCartQuantity={updateCartQuantity} removeFromCart={removeFromCart} />
               ) : (
@@ -590,7 +600,7 @@ export function KasirView() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-white/70">{totalQty} item · {paymentLabels[paymentMethod]}</p>
-                    <p className="mt-0.5 font-mono text-2xl font-bold text-white">
+                    <p aria-live="polite" aria-atomic="true" className="mt-0.5 font-mono text-2xl font-bold text-white">
                       {formatCurrency(cartTotal)}
                     </p>
                   </div>
@@ -697,6 +707,7 @@ export function KasirView() {
             <button
               key={item.value}
               type="button"
+              aria-pressed={category === item.value}
               onClick={() => setCategory(item.value)}
               className={cn(
                 "flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150 active:scale-95",

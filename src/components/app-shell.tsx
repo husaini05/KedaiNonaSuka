@@ -48,15 +48,27 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background">
+      {/* ── Skip-to-content — keyboard users jump past nav ── */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-2xl focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"
+      >
+        Lewati ke konten utama
+      </a>
+
       {/* ── Mobile sticky top bar — hidden on /kasir (POS uses its own header) ── */}
-      <header className={cn("sticky top-0 z-40 lg:hidden", pathname === "/kasir" && "hidden")}>
+      <header
+        aria-label="Header aplikasi"
+        className={cn("sticky top-0 z-40 lg:hidden", pathname === "/kasir" && "hidden")}
+      >
         <div className="flex h-14 items-center gap-3 border-b border-border/60 bg-white px-4">
           {/* Store icon — taps to Beranda */}
           <Link
             href="/dashboard"
+            aria-label="Beranda"
             className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10"
           >
-            <span className="text-base leading-none">🍽️</span>
+            <span aria-hidden="true" className="text-base leading-none">🍽️</span>
           </Link>
 
           {/* Page title */}
@@ -82,6 +94,7 @@ export function AppShell({
       <div className="mx-auto flex max-w-[1600px] gap-4 p-4 lg:min-h-screen lg:p-5">
         {/* Desktop sidebar */}
         <aside
+          aria-label="Sidebar navigasi"
           className="fixed top-5 hidden h-[calc(100vh-2.5rem)] w-[276px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/50 bg-sidebar shadow-[0_32px_80px_-40px_rgba(30,15,5,0.55)] lg:flex"
           style={{ background: "linear-gradient(175deg, #1e0f06 0%, #2d1a0c 60%, #3a2210 100%)" }}
         >
@@ -89,6 +102,7 @@ export function AppShell({
           <div className="border-b border-white/8 px-5 py-5">
             <div className="flex items-center gap-3">
               <div
+                aria-hidden="true"
                 className="flex size-10 items-center justify-center rounded-xl text-xl leading-none shadow-[0_4px_14px_-4px_rgba(232,130,26,0.45)]"
                 style={{ background: "rgba(232,130,26,0.2)", border: "1px solid rgba(232,130,26,0.3)" }}
               >
@@ -108,7 +122,7 @@ export function AppShell({
           </div>
 
           {/* Nav links */}
-          <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          <nav aria-label="Menu navigasi" className="flex-1 space-y-1 overflow-y-auto p-4">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -116,6 +130,7 @@ export function AppShell({
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all duration-150",
                     isActive
@@ -123,7 +138,7 @@ export function AppShell({
                       : "text-sidebar-foreground/60 hover:bg-white/8 hover:text-sidebar-foreground"
                   )}
                 >
-                  <Icon className="size-4 shrink-0" />
+                  <Icon aria-hidden="true" className="size-4 shrink-0" />
                   {item.label}
                 </Link>
               );
@@ -131,12 +146,15 @@ export function AppShell({
           </nav>
 
           {/* Transaction counter */}
-          <div className="mx-4 mb-3 rounded-[20px] border border-white/8 bg-white/5 px-4 py-3.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <div
+            aria-label={`${transactions.length} transaksi tersimpan`}
+            className="mx-4 mb-3 rounded-[20px] border border-white/8 bg-white/5 px-4 py-3.5"
+          >
+            <p aria-hidden="true" className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>
               Transaksi Tersimpan
             </p>
-            <p className="mt-1 font-heading text-3xl font-bold text-primary">{transactions.length}</p>
-            <p className="mt-0.5 text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <p aria-hidden="true" className="mt-1 font-heading text-3xl font-bold text-primary">{transactions.length}</p>
+            <p aria-hidden="true" className="mt-0.5 text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
               Data real-time dari database.
             </p>
           </div>
@@ -148,7 +166,7 @@ export function AppShell({
         </aside>
 
         {/* Main content */}
-        <main key={pathname} className="min-w-0 flex-1 pb-20 lg:ml-[292px] lg:pb-0 animate-page-enter">
+        <main id="main-content" key={pathname} className="min-w-0 flex-1 pb-20 lg:ml-[292px] lg:pb-0 animate-page-enter">
           {/* Desktop-only page header */}
           <div className="mb-6 hidden lg:block">
             <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">
@@ -158,13 +176,18 @@ export function AppShell({
           </div>
           {/* Network / bootstrap error banner */}
           {loadError && (
-            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3">
-              <span className="text-lg leading-none">⚠️</span>
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="mb-4 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3"
+            >
+              <span aria-hidden="true" className="text-lg leading-none">⚠️</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-destructive">Gagal memuat data</p>
                 <p className="mt-0.5 text-xs text-destructive/80">{loadError}</p>
               </div>
               <button
+                type="button"
                 onClick={() => window.location.reload()}
                 className="shrink-0 rounded-xl bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground"
               >
