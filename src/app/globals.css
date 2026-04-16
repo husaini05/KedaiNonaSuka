@@ -191,3 +191,25 @@ html {
     transform: translateY(0);
   }
 }
+
+@keyframes emojiDrift {
+  0%   { transform: rotate(-10deg) scale(1.4) translateY(0px); }
+  50%  { transform: rotate(-10deg) scale(1.4) translateY(-10px); }
+  100% { transform: rotate(-10deg) scale(1.4) translateY(0px); }
+}
+
+@keyframes authCardUp {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes authLogoIn {
+  0%   { opacity: 0; transform: scale(0.72) translateY(14px); }
+  70%  { transform: scale(1.07) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes authFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
