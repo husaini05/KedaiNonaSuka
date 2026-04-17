@@ -135,7 +135,7 @@ export function buildEscPosReceipt(data: ReceiptData): Uint8Array {
     divider(),
     CENTER,
     line(data.footer ?? "Terima kasih!"),
-    blankLine(), blankLine(), blankLine(),
+    blankLine(),
     CUT,
   );
 
