@@ -72,7 +72,8 @@ const BOLD_ON  = new Uint8Array([ESC, 0x45, 0x01]);
 const BOLD_OFF = new Uint8Array([ESC, 0x45, 0x00]);
 const DBL_H_ON  = new Uint8Array([GS, 0x21, 0x01]);     // Double height
 const DBL_H_OFF = new Uint8Array([GS, 0x21, 0x00]);
-const CUT     = new Uint8Array([GS, 0x56, 0x42, 0x00]); // Full cut
+// GS V B n — feed n dot-lines then full cut; n=1 minimises whitespace on P58C
+const CUT     = new Uint8Array([GS, 0x56, 0x42, 0x01]);
 
 // ── ESC/POS Receipt Builder ───────────────────────────────────────────────────
 export function buildEscPosReceipt(data: ReceiptData): Uint8Array {
@@ -134,7 +135,7 @@ export function buildEscPosReceipt(data: ReceiptData): Uint8Array {
     divider(),
     CENTER,
     line(data.footer ?? "Terima kasih!"),
-    blankLine(), blankLine(), blankLine(),
+    blankLine(),
     CUT,
   );
 
