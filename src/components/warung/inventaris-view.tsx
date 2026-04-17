@@ -99,7 +99,7 @@ function ProductForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="product-buy-price">Harga beli</Label>
+          <Label htmlFor="product-buy-price">Harga beli (HPP)</Label>
           <Input
             id="product-buy-price"
             type="text"
@@ -125,6 +125,32 @@ function ProductForm({
           />
         </div>
       </div>
+
+      {(draft.buyPrice > 0 || draft.sellPrice > 0) && (() => {
+        const margin = draft.sellPrice - draft.buyPrice;
+        const marginPct = draft.buyPrice > 0 ? (margin / draft.buyPrice) * 100 : 0;
+        const positive = margin > 0;
+        const zero = margin === 0;
+        return (
+          <div className={cn(
+            "flex items-center justify-between rounded-2xl px-4 py-3 text-sm",
+            positive ? "bg-green-50 text-green-700" : zero ? "bg-muted/50 text-muted-foreground" : "bg-red-50 text-red-600"
+          )}>
+            <span className="font-medium">{positive ? "Untung" : zero ? "Impas" : "Rugi"} per item</span>
+            <div className="flex items-center gap-3">
+              <span className="font-mono font-bold">{margin >= 0 ? "+" : ""}{formatCurrency(margin)}</span>
+              {draft.buyPrice > 0 && (
+                <span className={cn(
+                  "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                  positive ? "bg-green-100 text-green-700" : zero ? "bg-muted text-muted-foreground" : "bg-red-100 text-red-600"
+                )}>
+                  {marginPct.toFixed(1)}%
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="grid gap-2">
         <Label htmlFor="product-minimum-stock">Stok minimum</Label>
@@ -387,9 +413,31 @@ export function InventarisView() {
                   <p className="text-sm font-semibold mt-0.5">{formatCurrency(product.sellPrice)}</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-2.5">
-                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Harga beli</p>
+                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">HPP</p>
                   <p className="text-sm font-semibold mt-0.5">{formatCurrency(product.buyPrice)}</p>
                 </div>
+                {(() => {
+                  const margin = product.sellPrice - product.buyPrice;
+                  const pct = product.buyPrice > 0 ? (margin / product.buyPrice) * 100 : 0;
+                  return (
+                    <div className={cn(
+                      "col-span-2 rounded-xl p-2.5",
+                      margin > 0 ? "bg-green-50" : margin < 0 ? "bg-red-50" : "bg-muted/50"
+                    )}>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Margin</p>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <p className={cn("text-sm font-semibold", margin > 0 ? "text-green-700" : margin < 0 ? "text-red-600" : "text-muted-foreground")}>
+                          {margin >= 0 ? "+" : ""}{formatCurrency(margin)}
+                        </p>
+                        {product.buyPrice > 0 && (
+                          <span className={cn("text-xs font-bold", margin > 0 ? "text-green-600" : margin < 0 ? "text-red-500" : "text-muted-foreground")}>
+                            {pct.toFixed(1)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="mt-3 flex gap-2">
@@ -445,6 +493,7 @@ export function InventarisView() {
                   <TableHead>Kategori</TableHead>
                   <TableHead>Harga beli</TableHead>
                   <TableHead>Harga jual</TableHead>
+                  <TableHead>Margin</TableHead>
                   <TableHead>Stok</TableHead>
                   <TableHead>Minimum</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
@@ -464,6 +513,22 @@ export function InventarisView() {
                       <TableCell>{product.category}</TableCell>
                       <TableCell>{formatCurrency(product.buyPrice)}</TableCell>
                       <TableCell>{formatCurrency(product.sellPrice)}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const margin = product.sellPrice - product.buyPrice;
+                          const pct = product.buyPrice > 0 ? (margin / product.buyPrice) * 100 : 0;
+                          return (
+                            <div className="flex flex-col gap-0.5">
+                              <span className={cn("font-mono text-sm font-semibold", margin > 0 ? "text-green-600" : margin < 0 ? "text-red-500" : "text-muted-foreground")}>
+                                {margin >= 0 ? "+" : ""}{formatCurrency(margin)}
+                              </span>
+                              {product.buyPrice > 0 && (
+                                <span className="text-xs text-muted-foreground">{pct.toFixed(1)}%</span>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Badge
@@ -513,7 +578,7 @@ export function InventarisView() {
                 })}
                 {filteredProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
                       Tidak ada produk yang cocok dengan pencarian.
                     </TableCell>
                   </TableRow>

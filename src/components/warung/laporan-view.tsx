@@ -148,8 +148,10 @@ export function LaporanView() {
               </div>
               <div class="metrics-grid">
                 <div class="metric-card"><div class="metric-label">Omzet</div><p class="metric-value">${formatCurrency(summary.revenue)}</p></div>
-                <div class="metric-card"><div class="metric-label">Pengeluaran</div><p class="metric-value">${formatCurrency(summary.expenseTotal)}</p></div>
+                <div class="metric-card"><div class="metric-label">HPP (Modal barang)</div><p class="metric-value">${formatCurrency(summary.costOfGoods)}</p></div>
                 <div class="metric-card"><div class="metric-label">Laba kotor</div><p class="metric-value">${formatCurrency(summary.grossProfit)}</p></div>
+                <div class="metric-card"><div class="metric-label">Pengeluaran</div><p class="metric-value">${formatCurrency(summary.expenseTotal)}</p></div>
+                <div class="metric-card"><div class="metric-label">Laba bersih</div><p class="metric-value">${formatCurrency(summary.netProfit)}</p></div>
                 <div class="metric-card"><div class="metric-label">Rata-rata transaksi</div><p class="metric-value">${formatCurrency(summary.averageTicket)}</p></div>
               </div>
               <div>
@@ -182,7 +184,7 @@ export function LaporanView() {
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-3 grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Omzet"
           value={formatCompactCurrency(summary.revenue)}
@@ -190,9 +192,15 @@ export function LaporanView() {
           icon={TrendingUp}
         />
         <StatCard
+          title="HPP"
+          value={formatCompactCurrency(summary.costOfGoods)}
+          description="Modal barang terjual."
+          icon={CreditCard}
+        />
+        <StatCard
           title="Laba kotor"
           value={formatCompactCurrency(summary.grossProfit)}
-          description="Penjualan dikurangi modal barang."
+          description="Omzet dikurangi HPP."
           tone="accent"
           icon={BarChart3}
         />
@@ -352,14 +360,18 @@ export function LaporanView() {
                   <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.revenue)}</p>
                 </div>
                 <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
+                  <p className="text-xs text-muted-foreground">HPP</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.costOfGoods)}</p>
+                </div>
+                <div className="rounded-2xl bg-green-50 p-3 ring-1 ring-green-200/70">
+                  <p className="text-xs text-green-700">Laba kotor</p>
+                  <p className="mt-1.5 font-mono text-lg font-semibold text-green-800">{formatCurrency(summary.grossProfit)}</p>
+                </div>
+                <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
                   <p className="text-xs text-muted-foreground">Pengeluaran</p>
                   <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.expenseTotal)}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
-                  <p className="text-xs text-muted-foreground">Laba kotor</p>
-                  <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.grossProfit)}</p>
-                </div>
-                <div className="rounded-2xl bg-white p-3 ring-1 ring-border/70">
+                <div className="col-span-2 rounded-2xl bg-white p-3 ring-1 ring-border/70">
                   <p className="text-xs text-muted-foreground">Rata-rata transaksi</p>
                   <p className="mt-1.5 font-mono text-lg font-semibold">{formatCurrency(summary.averageTicket)}</p>
                 </div>
