@@ -84,7 +84,6 @@ export function buildEscPosReceipt(data: ReceiptData): Uint8Array {
     return merge(toBytes(text.substring(0, WIDTH)), LF_BYTE);
   }
   function divider(): Uint8Array { return line(DIV); }
-  function blankLine(): Uint8Array { return LF_BYTE; }
   function cols(left: string, right: string): Uint8Array {
     const r = right.substring(0, 12);
     const l = left.substring(0, WIDTH - r.length - 1);
@@ -135,7 +134,6 @@ export function buildEscPosReceipt(data: ReceiptData): Uint8Array {
     divider(),
     CENTER,
     line(data.footer ?? "Terima kasih!"),
-    blankLine(),
     CUT,
   );
 
