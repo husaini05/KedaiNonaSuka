@@ -71,6 +71,7 @@ export interface Settings {
   businessNotes: string;
   stockAlertThreshold: number;
   enabledPayments: PaymentMethod[];
+  qrisImageUrl?: string;
 }
 
 export interface AppState {

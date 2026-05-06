@@ -12,6 +12,7 @@ export const storeProfiles = pgTable("store_profiles", {
   businessNotes: text("business_notes").notNull(),
   stockAlertThreshold: integer("stock_alert_threshold").notNull(),
   enabledPayments: jsonb("enabled_payments").$type<PaymentMethod[]>().notNull(),
+  qrisImageUrl: text("qris_image_url"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
 });

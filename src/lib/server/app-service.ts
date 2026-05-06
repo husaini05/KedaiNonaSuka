@@ -133,6 +133,9 @@ async function ensureTables() {
     ALTER TABLE store_profiles
       ADD COLUMN IF NOT EXISTS business_notes text NOT NULL DEFAULT '';
 
+    ALTER TABLE store_profiles
+      ADD COLUMN IF NOT EXISTS qris_image_url text;
+
     ALTER TABLE transactions
       ADD COLUMN IF NOT EXISTS customer_name text;
 
@@ -257,6 +260,7 @@ function mapSettings(profile: typeof storeProfiles.$inferSelect): Settings {
     businessNotes: profile.businessNotes,
     stockAlertThreshold: profile.stockAlertThreshold,
     enabledPayments: profile.enabledPayments,
+    qrisImageUrl: profile.qrisImageUrl ?? undefined,
   };
 }
 
@@ -279,6 +283,7 @@ function normalizeSettings(settings: Settings): Settings {
     businessNotes: settings.businessNotes.trim(),
     stockAlertThreshold: Math.max(1, Math.round(settings.stockAlertThreshold || 0)),
     enabledPayments,
+    qrisImageUrl: settings.qrisImageUrl ?? undefined,
   };
 }
 
@@ -776,6 +781,7 @@ export async function updateStoreSettings(userId: string, settings: Settings) {
       businessNotes: nextSettings.businessNotes,
       stockAlertThreshold: nextSettings.stockAlertThreshold,
       enabledPayments: nextSettings.enabledPayments,
+      qrisImageUrl: nextSettings.qrisImageUrl ?? null,
       updatedAt: nowIso(),
     })
     .where(eq(storeProfiles.userId, userId))

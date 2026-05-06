@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, BadgeCheck, Bell, LogOut, MapPin, Printer, RotateCcw, Store, WalletCards } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Bell, LogOut, MapPin, Printer, QrCode, RotateCcw, Store, Trash2, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useAppState } from "@/components/providers/app-state-provider";
@@ -99,6 +99,21 @@ export function PengaturanView() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Gagal keluar dari akun.");
     }
+  }
+
+  function handleQrisImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 1_500_000) {
+      toast.error("Ukuran gambar maksimal 1.5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      updateField("qrisImageUrl", dataUrl);
+    };
+    reader.readAsDataURL(file);
   }
 
   const userInitials = getInitials(session?.user?.name || session?.user?.email || "KN");
@@ -305,6 +320,69 @@ export function PengaturanView() {
               <p className="mt-3 text-sm text-muted-foreground">
                 Daftar ini langsung dipakai untuk opsi pembayaran di kasir utama.
               </p>
+
+              {/* QRIS image upload — shown only when QRIS is enabled */}
+              {form.enabledPayments.includes("QRIS") && (
+                <div className="mt-5 border-t border-border/60 pt-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <QrCode className="size-4 text-primary" />
+                    <p className="font-medium text-sm">Gambar QR QRIS</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload foto QR QRIS dari bank atau aplikasi pembayaran kamu. Gambar ini akan ditampilkan di kasir saat customer mau bayar QRIS.
+                  </p>
+                  {form.qrisImageUrl ? (
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-2xl border-2 border-primary/20 bg-white p-2 shadow-sm">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={form.qrisImageUrl}
+                          alt="QR QRIS warung"
+                          className="size-32 rounded-xl object-contain"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xs text-green-700 font-medium bg-green-50 rounded-full px-3 py-1 w-fit">
+                          ✓ QR sudah diatur
+                        </p>
+                        <label className="cursor-pointer rounded-2xl border border-border/60 bg-muted/30 px-4 py-2 text-sm font-medium hover:bg-muted/60 transition text-center">
+                          Ganti gambar
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={handleQrisImageChange}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => updateField("qrisImageUrl", undefined)}
+                          className="flex items-center gap-1.5 rounded-2xl border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/5 transition"
+                        >
+                          <Trash2 className="size-3.5" />
+                          Hapus QR
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-muted/20 p-8 text-center hover:border-primary/40 hover:bg-primary/5 transition">
+                      <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10">
+                        <QrCode className="size-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">Upload gambar QR QRIS</p>
+                        <p className="mt-1 text-xs text-muted-foreground">PNG, JPG, atau JPEG · Maks. 1.5 MB</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={handleQrisImageChange}
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Action buttons */}

@@ -11,6 +11,7 @@ import {
   PackageSearch,
   Plus,
   Printer,
+  QrCode,
   ReceiptText,
   Search,
   Share2,
@@ -374,6 +375,7 @@ export function KasirView() {
   const [category, setCategory] = useState<"Semua" | ProductCategory>("Semua");
   const [cartSheetOpen, setCartSheetOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [qrisDialogOpen, setQrisDialogOpen] = useState(false);
   const [checkoutSuccessOpen, setCheckoutSuccessOpen] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null);
   const [cashReceived, setCashReceived] = useState("");
@@ -491,7 +493,11 @@ export function KasirView() {
       if (cashReceivedNum < cartTotal) { toast.error(`Uang kurang ${formatCurrency(cartTotal - cashReceivedNum)}.`); return; }
     }
     setCartSheetOpen(false);
-    setConfirmOpen(true);
+    if (paymentMethod === "QRIS") {
+      setQrisDialogOpen(true);
+    } else {
+      setConfirmOpen(true);
+    }
   }
 
   async function handleCheckoutNow() {
@@ -959,6 +965,87 @@ export function KasirView() {
                 </span>
               ) : (
                 "Ya, Konfirmasi"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── QRIS dialog ──────────────────────────────────────────────────── */}
+      <Dialog open={qrisDialogOpen} onOpenChange={setQrisDialogOpen}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm rounded-[28px] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <DialogHeader className="shrink-0 p-5 pb-0">
+            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-primary/10">
+              <QrCode className="size-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center font-heading text-xl">Scan QR untuk Bayar</DialogTitle>
+            <DialogDescription className="text-center">
+              Minta customer scan QR di bawah, lalu tap konfirmasi setelah bunyi notif masuk.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-5 pt-4 space-y-4">
+            {/* Total */}
+            <div className="rounded-2xl bg-primary/8 border border-primary/20 p-4 text-center">
+              <p className="text-xs text-muted-foreground">Total tagihan</p>
+              <p className="mt-1 font-mono text-3xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{totalQty} item · QRIS</p>
+            </div>
+
+            {/* QR image */}
+            {settings.qrisImageUrl ? (
+              <div className="flex justify-center">
+                <div className="rounded-2xl border-2 border-border/60 bg-white p-3 shadow-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={settings.qrisImageUrl}
+                    alt="QR QRIS pembayaran"
+                    className="size-52 rounded-xl object-contain"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-muted/20 p-8 text-center">
+                <QrCode className="size-10 text-muted-foreground/40" />
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">QR belum diatur</p>
+                  <p className="mt-1 text-xs text-muted-foreground/70">
+                    Upload gambar QR QRIS di menu <span className="font-semibold">Pengaturan → Metode bayar</span>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <p className="text-center text-xs text-muted-foreground">
+              Setelah menerima notifikasi pembayaran, tap tombol konfirmasi di bawah.
+            </p>
+          </div>
+
+          <DialogFooter className="shrink-0 rounded-b-[28px]" showCloseButton>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setQrisDialogOpen(false)}
+              disabled={isCheckingOut}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => { setQrisDialogOpen(false); void handleCheckoutNow(); }}
+              disabled={isCheckingOut}
+            >
+              {isCheckingOut ? (
+                <span className="flex items-center gap-2">
+                  <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Memproses...
+                </span>
+              ) : (
+                <>
+                  <CheckCircle2 className="size-4" />
+                  Konfirmasi Diterima
+                </>
               )}
             </Button>
           </DialogFooter>

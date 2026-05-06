@@ -61,6 +61,7 @@ export const SettingsSchema = z.object({
   enabledPayments: z
     .array(z.enum(PAYMENT_METHODS))
     .min(1, "Pilih minimal satu metode pembayaran."),
+  qrisImageUrl: z.string().max(2_000_000).optional(),
 });
 
 export const RestockSchema = z.object({
