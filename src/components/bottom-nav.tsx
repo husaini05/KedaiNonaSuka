@@ -58,7 +58,7 @@ export function BottomNav() {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "text-[11px] leading-none font-medium transition-colors",
+                  "text-xs leading-none font-medium transition-colors",
                   isActive ? "text-primary font-semibold" : "text-gray-500"
                 )}
               >

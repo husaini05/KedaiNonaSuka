@@ -57,7 +57,7 @@ export function StatCard({ title, value, description, tone = "default", icon: Ic
       <div className="pl-4">
         <p
           className={cn(
-            "text-[11px] font-semibold uppercase tracking-widest",
+            "text-xs font-semibold uppercase tracking-widest",
             tone === "default" && "text-muted-foreground",
             tone === "accent" && "text-green-700",
             tone === "warn"   && "text-primary/80",
@@ -79,7 +79,7 @@ export function StatCard({ title, value, description, tone = "default", icon: Ic
 
         <p
           className={cn(
-            "mt-1.5 text-[12px] leading-relaxed",
+            "mt-1.5 text-xs leading-relaxed",
             tone === "default" && "text-muted-foreground",
             tone === "accent" && "text-green-700/70",
             tone === "warn"   && "text-primary/60",

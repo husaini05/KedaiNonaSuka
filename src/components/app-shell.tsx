@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  AlertTriangle,
   BarChart3,
   BookOpen,
   LayoutDashboard,
   Package2,
   Settings2,
   ShoppingBasket,
+  Store,
 } from "lucide-react";
 import { AccountPanel } from "@/components/auth/account-panel";
 import { BottomNav } from "@/components/bottom-nav";
@@ -47,7 +49,7 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* ── Skip-to-content — keyboard users jump past nav ── */}
       <a
         href="#main-content"
@@ -68,7 +70,7 @@ export function AppShell({
             aria-label="Beranda"
             className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10"
           >
-            <span aria-hidden="true" className="text-base leading-none">🍽️</span>
+            <Store aria-hidden="true" className="size-4 text-primary" />
           </Link>
 
           {/* Page title */}
@@ -95,7 +97,7 @@ export function AppShell({
         {/* Desktop sidebar */}
         <aside
           aria-label="Sidebar navigasi"
-          className="fixed top-5 hidden h-[calc(100vh-2.5rem)] w-[276px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/50 bg-sidebar shadow-[0_32px_80px_-40px_rgba(30,15,5,0.55)] lg:flex"
+          className="fixed top-5 hidden h-[calc(100dvh-2.5rem)] w-[276px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/50 bg-sidebar shadow-[0_32px_80px_-40px_rgba(30,15,5,0.55)] lg:flex"
           style={{ background: "linear-gradient(175deg, #1e0f06 0%, #2d1a0c 60%, #3a2210 100%)" }}
         >
           {/* Store branding */}
@@ -103,10 +105,10 @@ export function AppShell({
             <div className="flex items-center gap-3">
               <div
                 aria-hidden="true"
-                className="flex size-10 items-center justify-center rounded-xl text-xl leading-none shadow-[0_4px_14px_-4px_rgba(232,130,26,0.45)]"
+                className="flex size-10 items-center justify-center rounded-xl shadow-[0_4px_14px_-4px_rgba(232,130,26,0.45)]"
                 style={{ background: "rgba(232,130,26,0.2)", border: "1px solid rgba(232,130,26,0.3)" }}
               >
-                🍽️
+                <Store className="size-5 text-primary" />
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold leading-tight text-sidebar-foreground">
@@ -132,7 +134,7 @@ export function AppShell({
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all duration-150",
+                    "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium transition-[color,background-color,box-shadow] duration-150",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-[0_8px_24px_-10px_rgba(232,130,26,0.7)]"
                       : "text-sidebar-foreground/60 hover:bg-white/8 hover:text-sidebar-foreground"
@@ -181,7 +183,7 @@ export function AppShell({
               aria-live="assertive"
               className="mb-4 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3"
             >
-              <span aria-hidden="true" className="text-lg leading-none">⚠️</span>
+              <AlertTriangle aria-hidden="true" className="size-5 shrink-0 text-destructive mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-destructive">Gagal memuat data</p>
                 <p className="mt-0.5 text-xs text-destructive/80">{loadError}</p>
